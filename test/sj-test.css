@@ -1,0 +1,140 @@
+/* SimpleJack - testovací verze kalkulátoru plochy a množstevní slevy.
+   Načítá se jen v prohlížeči, kde je zapnutý test (?sjtest=1, viz js/simplejack.js).
+   Vychází z design systému SimpleJack (komponenty AreaCalculator, QuantityDiscount, CartBlock). */
+
+html.sj-test {
+  --sjt-loaded: 1;
+  --sj-accent-soft: #fff8f3;
+  --sj-accent-line: #ffe1c4;
+  --sj-accent-ink: #b64702;
+}
+
+/* --- štítek testovací verze --- */
+html.sj-test .sj-test-badge { position: fixed; left: 12px; bottom: 12px; z-index: 2147483000; display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #1f1f1f; color: #fff; font-family: inherit; font-size: 13px; line-height: 18px; }
+html.sj-test .sj-test-badge a { color: #fff; text-decoration: underline; }
+html.sj-test .sj-test-badge a:hover { color: #fff; text-decoration: none; }
+
+/* --- co v testu nahrazujeme --- */
+html.sj-test.sj-calc-on:not(.sj-calc-fallback) #product-detail-form #measure-banner { display: none !important; }
+html.sj-test.sj-qd-on #product-detail-form .quantity-discounts { display: none !important; }
+/* cena celkem ze sj.js (strong.price-final > #price-final-measure); nativní akční cena má také price-action, proto ne podle třídy */
+html.sj-test .p-to-cart-block .price-final:has(> #price-final-measure), html.sj-test .p-to-cart-block .sj-old-price { display: none !important; }
+html.sj-test .p-to-cart-block.sj-price-on .p-final-price-wrapper > .price-final,
+html.sj-test .p-to-cart-block.sj-price-on .p-final-price-wrapper > .price-measure { display: none !important; }
+html.sj-test .detail-parameters tr.sj-code-row.is-empty { display: none !important; }
+html.sj-test .p-variants-block.sj-variants-hint { outline: 3px solid var(--color-primary, #fd7e31); outline-offset: 6px; transition: outline-color .3s ease-out; }
+
+/* --- cena v bloku Do košíku (cena celkem, pod ní cena za kus a m²) --- */
+html.sj-test .sj-price { display: none; }
+html.sj-test .p-to-cart-block.sj-price-on .sj-price { display: block; }
+html.sj-test .sj-price__final { display: block; font-size: 32px; line-height: 32px; font-weight: 600; white-space: nowrap; color: var(--colors-foregrounds-content-primary, #1f1f1f); }
+html.sj-test .sj-price__measure { display: block; margin-top: 4px; font-size: 16px; line-height: 24px; font-weight: 400; color: var(--colors-foregrounds-content-primary, #1f1f1f); }
+html.sj-test .sj-price__measure:empty { display: none; }
+html.sj-test .p-to-cart-block.sj-price-on .p-final-price-wrapper > .price-standard,
+html.sj-test .p-to-cart-block.sj-price-on .p-final-price-wrapper > .price-save { display: none !important; }
+html.sj-test .sj-price__std { display: block; font-size: 16px; line-height: 32px; font-weight: 400; color: var(--colors-foregrounds-content-secondary, #4d4d4d); }
+html.sj-test .sj-price__std[hidden] { display: none !important; }
+html.sj-test .sj-price__std del { margin-right: 5px; text-decoration: line-through; }
+
+/* ========== Kalkulátor plochy (sj-calc) ========== */
+html.sj-test .sj-calc[hidden], html.sj-test .sj-qd[hidden],
+html.sj-test .sj-calc [hidden], html.sj-test .sj-qd [hidden] { display: none !important; }
+html.sj-test .sj-calc { box-sizing: border-box; width: 100%; margin: 20px 0 16px; background: var(--sj-accent-soft); border: 1px solid var(--sj-accent-line); border-radius: 0; color: var(--colors-foregrounds-content-primary, #1f1f1f); font-family: inherit; }
+html.sj-test .sj-calc *, html.sj-test .sj-qd * { box-sizing: border-box; }
+html.sj-test .sj-calc svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; stroke-linejoin: miter; }
+
+/* zavřená: výzva před výběrem barvy, celá je tlačítko a posune na varianty */
+html.sj-test .sj-calc--teaser { display: flex; align-items: center; gap: 16px; padding: 16px 20px; text-align: left; cursor: pointer; font-size: 16px; line-height: 22px; font-weight: 400; height: auto; min-height: 0; -webkit-appearance: none; appearance: none; box-shadow: none; text-transform: none; letter-spacing: normal; }
+html.sj-test .sj-calc--teaser:hover { border-color: var(--color-primary, #fd7e31); background: var(--sj-accent-soft); }
+html.sj-test .sj-calc--teaser:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
+html.sj-test .sj-calc__icon { flex: 0 0 44px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--colors-surface-primary, #fff); color: var(--color-primary, #fd7e31); }
+html.sj-test .sj-calc__icon svg { width: 22px; height: 22px; }
+html.sj-test .sj-calc__copy { flex: 1 1 auto; min-width: 0; }
+html.sj-test .sj-calc__title { display: block; font-size: 16px; line-height: 22px; font-weight: 700; color: var(--colors-foregrounds-content-primary, #1f1f1f); }
+html.sj-test .sj-calc__text { display: block; margin-top: 2px; font-size: 15px; line-height: 22px; color: var(--colors-foregrounds-content-secondary, #4d4d4d); }
+html.sj-test .sj-calc__text b { font-weight: 700; color: var(--sj-accent-ink); }
+html.sj-test .sj-calc__arrow { flex: 0 0 auto; color: var(--color-primary, #fd7e31); transition: transform .3s ease-out; }
+html.sj-test .sj-calc__arrow svg { width: 22px; height: 22px; }
+html.sj-test .sj-calc--teaser:hover .sj-calc__arrow { transform: translateY(-3px); }
+
+/* otevřená: po výběru barvy, dva nízké řádky */
+html.sj-test .sj-calc--open { padding: 12px 20px; }
+html.sj-test .sj-calc__body { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; }
+html.sj-test .sj-calc__ask { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 8px; }
+html.sj-test .sj-calc__in { display: inline-flex; align-items: center; gap: 10px; }
+html.sj-test .sj-calc__q { display: inline; margin: 0; padding: 0; font-size: 16px; line-height: 24px; font-weight: 400; white-space: nowrap; color: inherit; cursor: default; }
+html.sj-test .sj-calc__ks { font-size: 16px; line-height: 24px; font-weight: 700; white-space: nowrap; color: var(--colors-foregrounds-content-primary, #1f1f1f); }
+html.sj-test .sj-calc__stepper { display: inline-flex; align-items: stretch; height: 40px; margin: 0; background: var(--colors-surface-primary, #fff); border: 1px solid var(--colors-foregrounds-borders-primary, #919191); }
+html.sj-test .sj-calc__stepper:focus-within { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 0; }
+html.sj-test .sj-calc__step { display: block; width: 34px; height: 38px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--colors-surface-primary, #fff); box-shadow: none; font-family: inherit; font-size: 18px; line-height: 38px; font-weight: 400; text-align: center; color: var(--colors-foregrounds-content-primary, #1f1f1f); cursor: pointer; -webkit-appearance: none; appearance: none; }
+html.sj-test .sj-calc__step svg { display: block; width: 12px; height: 12px; margin: 0 auto; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: butt; }
+html.sj-test .sj-calc__step:hover { background: var(--sj-bg, #f6f8f9); }
+html.sj-test .sj-calc__step:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: -3px; }
+html.sj-test .sj-calc__stepper input.sj-calc__m2 { display: block; width: 52px; height: 38px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; text-align: right; font-family: inherit; font-size: 18px; line-height: 38px; font-weight: 700; color: var(--colors-foregrounds-content-primary, #1f1f1f); outline: 0; -webkit-appearance: none; appearance: none; -moz-appearance: textfield; }
+html.sj-test .sj-calc__stepper input.sj-calc__m2::placeholder { color: var(--sj-ink-muted, #666); font-weight: 400; opacity: 1; }
+html.sj-test .sj-calc__stepper input.sj-calc__m2::-webkit-outer-spin-button,
+html.sj-test .sj-calc__stepper input.sj-calc__m2::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+html.sj-test .sj-calc__unit { display: inline-flex; align-items: center; padding: 0 8px 0 4px; font-size: 15px; color: var(--sj-ink-muted, #666); }
+html.sj-test .sj-calc__row2 { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; margin-top: 10px; }
+html.sj-test .sj-calc__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+html.sj-test .sj-calc__chip { display: inline-flex; align-items: center; height: 32px; min-height: 0; margin: 0; padding: 0 12px; background: var(--colors-surface-primary, #fff); border: 1px solid var(--colors-foregrounds-borders-primary, #919191); border-radius: 0; box-shadow: none; font-family: inherit; font-size: 14px; line-height: 1; font-weight: 600; color: var(--colors-foregrounds-content-primary, #1f1f1f); white-space: nowrap; cursor: pointer; text-transform: none; -webkit-appearance: none; appearance: none; }
+html.sj-test .sj-calc__chip:hover { border-color: var(--color-primary, #fd7e31); background: var(--colors-surface-primary, #fff); color: var(--colors-foregrounds-content-primary, #1f1f1f); }
+html.sj-test .sj-calc__chip.is-active { padding: 0 11px; border: 2px solid var(--color-primary, #fd7e31); font-weight: 700; }
+html.sj-test .sj-calc__chip:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
+html.sj-test .sj-calc__opt { display: inline-flex; align-items: center; gap: 8px; }
+html.sj-test .sj-calc__check { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 0; font-size: 15px; line-height: 22px; font-weight: 400; color: inherit; cursor: pointer; }
+html.sj-test .sj-calc__check::before, html.sj-test .sj-calc__check::after { content: none; display: none; }
+html.sj-test .sj-calc__check input[type="checkbox"] { position: static; display: inline-block; width: 18px; height: 18px; margin: 0; padding: 0; opacity: 1; clip: auto; pointer-events: auto; visibility: visible; -webkit-appearance: checkbox; appearance: auto; accent-color: var(--colors-forms-activated, #3f7e88); }
+html.sj-test .sj-calc__infowrap { position: relative; display: inline-flex; }
+html.sj-test .sj-calc__info { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 50%; background: var(--colors-foregrounds-content-tertiary, #767676); color: #fff; font-family: inherit; font-size: 12px; line-height: 1; font-weight: 700; font-style: italic; cursor: help; -webkit-appearance: none; appearance: none; }
+html.sj-test .sj-calc__info:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
+html.sj-test .sj-calc__tip { display: none; position: absolute; right: -10px; top: calc(100% + 9px); z-index: 50; width: 17em; max-width: min(21em, calc(100vw - 20px)); padding: 4px 8px; border-radius: 4px; background: #000; color: #fff; font-size: 14px; line-height: 1.25; font-style: normal; font-weight: 400; text-align: left; white-space: normal; }
+html.sj-test .sj-calc__tip::before { content: ""; position: absolute; right: 14px; top: -5px; border: 5px solid transparent; border-top: 0; border-bottom-color: #000; }
+html.sj-test .sj-calc__tip--left { left: -10px; right: auto; }
+html.sj-test .sj-calc__tip--left::before { left: 14px; right: auto; }
+html.sj-test .sj-calc__infowrap:hover .sj-calc__tip, html.sj-test .sj-calc__info:focus-visible + .sj-calc__tip, html.sj-test .sj-calc__tip.is-visible { display: block; }
+
+/* ========== Množstevní sleva (sj-qd), jen u produktu s nastavenou slevou ========== */
+html.sj-test .sj-qd { width: 100%; margin: 0; background: var(--sj-bg, #f6f8f9); border-bottom: 1px solid var(--sj-line, #e6eaed); font-family: inherit; }
+html.sj-test .sj-qd + .p-to-cart-block { margin-top: 0; }
+html.sj-test .sj-qd__bar { display: flex; align-items: center; gap: 12px; width: 100%; height: auto; min-height: 0; margin: 0; padding: 12px 16px 12px 10px; background: transparent; border: 0; border-radius: 0; box-shadow: none; font-family: inherit; font-size: 15px; line-height: 22px; font-weight: 400; text-align: left; text-transform: none; color: inherit; cursor: pointer; -webkit-appearance: none; appearance: none; }
+html.sj-test .sj-qd__bar:hover { background: transparent; color: inherit; }
+html.sj-test .sj-qd__bar:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: -3px; }
+html.sj-test .sj-qd__badge { flex: 0 0 32px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--sj-accent-ink); color: #fff; font-size: 16px; line-height: 1; font-weight: 900; }
+html.sj-test .sj-qd__badge--ok { background: var(--colors-state-success, #3a800e); }
+html.sj-test .sj-qd__badge svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; }
+html.sj-test .sj-qd__msg { flex: 1 1 auto; min-width: 0; font-size: 15px; line-height: 22px; color: var(--colors-foregrounds-content-secondary, #4d4d4d); }
+html.sj-test .sj-qd__msg strong { font-size: 16px; font-weight: 700; color: var(--sj-brand, #0b5668); }
+html.sj-test .sj-qd__msg .is-save { font-weight: 700; color: var(--colors-state-success, #3a800e); }
+html.sj-test .sj-qd__toggle { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; font-size: 15px; line-height: 22px; font-weight: 700; color: var(--sj-accent-ink); text-decoration: underline; text-underline-offset: 0.14em; text-decoration-thickness: 0.0625em; }
+html.sj-test .sj-qd__toggle svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.5; transition: transform .3s ease-out; }
+html.sj-test .sj-qd.is-open .sj-qd__toggle svg { transform: rotate(180deg); }
+html.sj-test .sj-qd__panel { padding: 0 10px 12px; }
+html.sj-test .sj-qd__tiers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+html.sj-test .sj-qd__tier { position: relative; display: block; margin: 0; padding: 12px 12px 10px; background: var(--colors-surface-primary, #fff); border: 1px solid var(--colors-foregrounds-borders-secondary, #dadada); list-style: none; }
+html.sj-test .sj-qd__tier::before, html.sj-test .sj-qd__tier::marker { content: none; display: none; }
+html.sj-test .sj-qd__tier.is-current { padding: 11px 11px 9px; border: 2px solid var(--color-primary, #fd7e31); }
+html.sj-test .sj-qd__you { position: absolute; left: 10px; top: -9px; padding: 3px 6px; background: var(--sj-accent-ink); color: #fff; font-size: 10px; line-height: 11px; text-transform: uppercase; }
+html.sj-test .sj-qd__qty { display: block; font-size: 15px; line-height: 22px; font-weight: 700; color: var(--colors-foregrounds-content-primary, #1f1f1f); white-space: nowrap; }
+html.sj-test .sj-qd__off { display: block; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--sj-accent-ink); }
+html.sj-test .sj-qd__off--base { font-weight: 400; color: var(--sj-ink-muted, #666); }
+html.sj-test .sj-qd__price { display: block; margin-top: 8px; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--colors-foregrounds-content-primary, #1f1f1f); white-space: nowrap; }
+html.sj-test .sj-qd__price small { font-size: 13px; font-weight: 400; color: var(--sj-ink-muted, #666); }
+html.sj-test .sj-qd__nudge { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 12px 0 0; font-size: 15px; line-height: 22px; color: var(--colors-foregrounds-content-secondary, #4d4d4d); }
+html.sj-test .sj-qd__nudge b { color: var(--colors-foregrounds-content-primary, #1f1f1f); }
+html.sj-test .sj-qd__nudge .is-save { font-weight: 700; color: var(--colors-state-success, #3a800e); }
+html.sj-test .sj-qd__set { display: inline-flex; align-items: center; height: 40px; min-height: 0; margin: 0; padding: 0 16px; background: var(--colors-surface-primary, #fff); border: 1px solid var(--sj-accent-ink); border-radius: 0; box-shadow: none; color: var(--sj-accent-ink); font-family: inherit; font-size: 15px; line-height: 1; font-weight: 900; text-transform: none; cursor: pointer; -webkit-appearance: none; appearance: none; }
+html.sj-test .sj-qd__set:hover { background: var(--sj-accent-ink); color: #fff; }
+html.sj-test .sj-qd__set:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
+html.sj-test .sj-qd__note { margin: 10px 0 0; font-size: 14px; line-height: 20px; color: var(--sj-ink-muted, #666); }
+
+@media (max-width: 560px) {
+  html.sj-test .sj-qd__tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 8px; }
+  html.sj-test .sj-calc--open { position: relative; padding: 12px 16px; }
+  html.sj-test .sj-calc--open .sj-calc__infowrap { position: static; }
+  html.sj-test .sj-calc--open .sj-calc__tip { left: 12px; right: 12px; width: auto; margin-top: 30px; top: auto; }
+  html.sj-test .sj-calc--open .sj-calc__tip::before { display: none; }
+  html.sj-test .sj-calc__chips { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
+  html.sj-test .sj-calc__chip { padding: 0 10px; font-size: 13px; }
+  html.sj-test .sj-calc__chip.is-active { padding: 0 9px; }
+}

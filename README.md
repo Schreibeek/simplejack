@@ -15,4 +15,10 @@ Po změně souboru zvýšit v Shoptetu číslo verze v odkazu (?v=), jinak se m�
 
 HTML kódy v Shoptetu: Vzhled a obsah > Editor > HTML kód
 
+Testovací verze (nový kalkulátor plochy a množstevní sleva):
+
+- ?sjtest=1 v adrese ji zapne, ?sjtest=0 vypne. Platí jen v prohlížeči, kde se zapnula (localStorage), a v rohu je štítek s odkazem na vypnutí.
+- Přepínač je na začátku js/simplejack.js. Bez zapnutí se nic dalšího nenačte.
+- Soubory test/sj-test.css a test/sj-test.js se v testu načítají vždy čerstvé, po změně stačí nahrát na GitHub, ?v= v Shoptetu se nemění.
+
 Repozitář je veřejný. Nedávat sem nic s údaji zákazníků ani přístupy.
