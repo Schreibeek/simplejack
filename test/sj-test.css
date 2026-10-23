@@ -131,6 +131,8 @@ html.sj-test .sj-qd__set:focus-visible { outline: 3px solid var(--colors-focus-p
 html.sj-test .sj-qd__note { margin: 10px 0 0; font-size: 14px; line-height: 20px; color: var(--sj-ink-muted, #666); }
 
 @media (max-width: 560px) {
+  /* na mobilu výzva bez šipky, ať je víc místa na text */
+  html.sj-test .sj-calc__arrow { display: none; }
   html.sj-test .sj-qd__tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 8px; }
   html.sj-test .sj-calc--open { position: relative; padding: 12px 16px; }
   html.sj-test .sj-calc--open .sj-calc__infowrap { position: static; }

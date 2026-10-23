@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '2026-10-23.6';
+  var VERSION = '2026-10-23.7';
   var CHIPS = [10, 20, 30, 50, 100];
   var CUT = 1.1;
   var d = document;
