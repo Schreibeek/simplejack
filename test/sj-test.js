@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '2026-10-23.4';
+  var VERSION = '2026-10-23.5';
   var CHIPS = [10, 20, 30, 50, 100];
   var CUT = 1.1;
   var d = document;
@@ -236,6 +236,11 @@
         var target = variants || params || form;
         var top = target.getBoundingClientRect().top + (window.pageYOffset || d.documentElement.scrollTop) - 100;
         try { window.scrollTo({ top: top, behavior: 'smooth' }); } catch (x) { window.scrollTo(0, top); }
+        // rámeček končí kousek pod vzorky, ne až na konci bloku (Shoptet má pod variantami volné místo a rámeček by zasahoval do parametrů)
+        var r = target.getBoundingClientRect();
+        var bottoms = qsa('.advanced-parameter, select, .variant-label', target).map(function (e) { return e.getBoundingClientRect().bottom; }).filter(function (v) { return v > 0; });
+        var gap = bottoms.length ? Math.max(0, Math.round(r.bottom - Math.max.apply(null, bottoms))) : 0;
+        target.style.setProperty('--sj-hint-gap', gap + 'px');
         target.classList.add('sj-variants-hint');
         setTimeout(function () { target.classList.remove('sj-variants-hint'); }, 1600);
       });
