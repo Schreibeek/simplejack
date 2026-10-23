@@ -9,6 +9,7 @@ Co se na webu změnilo a kdy. Nové záznamy patří nahoru. Drobné úpravy vzh
   - Množstevní sleva místo tabulky Shoptetu, jen u produktů se slevou: lišta se zprávou podle množství, po rozkliknutí cenové hladiny, tip na další hladinu a tlačítko Nastavit X ks.
   - Cena v bloku Do košíku vypadá jako dřív, jen se počítá přesně se slevou. Po zadání plochy ukáže cenu celkem (Solum Skin 30 m² = 120 ks za 35 532 Kč, stará kalkulačka ukazovala 39 480 Kč bez slevy), pod ní cenu za m².
   - Řádek Kód v parametrech se ukáže až po výběru varianty.
+  - Kalkulátor a lišta slevy se ukážou hned se stránkou a nečekají na sj.js. Kusy na m² se nejdřív vezmou z parametru Počet dlaždic na 1 m², přesná data ze sj.js je pak doplní a zadané kusy se případně samy přepočítají. Produkty bez toho parametru čekají na sj.js jako dřív.
 - Testovací verze (?sjtest=1) je teď prázdná, jen se štítkem, a je připravená na další test.
 
 ## 23. 10. 2026
