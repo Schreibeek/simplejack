@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var variants = qs('.p-variants-block', form);
     var nativeQd = qs('.quantity-discounts', form);
 
-    var S = { m2: null, cut: false, qdOpen: false, lastSet: null, seenQty: null, userAt: 0, reapply: 0, chosenAt: 0, warned: false };
+    var S = { m2: null, cut: false, qdOpen: false, lastSet: null, calcSet: null, seenQty: null, userAt: 0, reapply: 0, chosenAt: 0, warned: false };
 
     /* data produktu */
     function dl() { try { return window.getShoptetDataLayer ? window.getShoptetDataLayer('product') : null; } catch (x) { return null; } }
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
       m2Input.value = fmtM2(nx);
       applyCalc();
     }
-    function applyCalc() { var n = pieces(S.m2); if (n) setQty(n); else render(); }
+    function applyCalc() { var n = pieces(S.m2); S.calcSet = n || null; if (n) setQty(n); else render(); }
 
     function renderCalc(v) {
       if (!calcOn) return;
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
       qdSet = qs('.sj-qd__set', qdEl);
       qdNote = qs('.sj-qd__note', qdEl);
       qdBar.addEventListener('click', function () { S.qdOpen = !S.qdOpen; render(); });
-      qdSet.addEventListener('click', function () { if (nudgeTarget) setQty(nudgeTarget); });
+      qdSet.addEventListener('click', function () { if (nudgeTarget) { S.calcSet = null; setQty(nudgeTarget); } });
       cart.parentNode.insertBefore(qdEl, cart);
       qdOn = true;
       root.classList.add('sj-qd-on');
@@ -426,6 +426,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function render() {
       markOldPrice();
       ensureCalc();
+      // přesná data ze sj.js (kusy na m², krok) můžou dorazit až po zadání plochy: přepočítat kusy, pokud je mezitím nikdo neměnil
+      if (S.m2 && S.calcSet && qty() === S.calcSet) {
+        var nq = pieces(S.m2);
+        if (nq && nq !== S.calcSet) { S.calcSet = nq; setQty(nq); return; }
+      }
       var v = variantState(), q = qty();
       if (v.chosen && !S.chosenAt) S.chosenAt = Date.now();
       if (!v.chosen) S.chosenAt = 0;
@@ -446,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('change', function (e) { if (e.target && e.target.name === 'priceId') setTimeout(onVariant, 30); });
 
     // ruční změna množství v bloku Do košíku: přepočítat jen cenu, m² v kalkulátoru zůstanou
-    function userQty() { S.userAt = Date.now(); S.lastSet = null; }
+    function userQty() { S.userAt = Date.now(); S.lastSet = null; S.calcSet = null; }
     amount.addEventListener('input', function (e) { if (e.isTrusted) userQty(); render(); });
     amount.addEventListener('keydown', userQty);
     cart.addEventListener('click', function (e) {
@@ -469,9 +474,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ---------- spuštění ---------- */
     if (tiers.length) buildQd();
-    // kalkulátor jen u produktů, kde sj.js ukazuje svůj banner a kde známe kusy na m² (ze sj.js nebo z parametru),
-    // takže třeba u nájezdů a rohů se neukáže
-    function ensureCalc() { if (!calcOn && d.getElementById('measure-banner') && qim() > 0) buildCalc(); }
+    // kalkulátor hned, když má produkt parametr Počet dlaždic na 1 m² (je přímo ve stránce, nečeká se na sj.js),
+    // jinak až sj.js přidá svůj banner a pošle kusy na m². U nájezdů a rohů se neukáže.
+    function ensureCalc() { if (!calcOn && (paramQim() > 0 || (d.getElementById('measure-banner') && sjQim() > 0))) buildCalc(); }
     render();
     if (!calcOn) {
       // sj.js přidává banner a data až po odpovědi svého API
@@ -479,6 +484,12 @@ document.addEventListener('DOMContentLoaded', function () {
       mo.observe(form, { childList: true });
       var bootN = 0, boot = setInterval(function () { render(); if (calcOn || ++bootN > 24) { clearInterval(boot); mo.disconnect(); } }, 500);
     }
+    // data ze sj.js (kusy na m², cena za m², krok) dorazí až po jeho API: když se změní, překreslit
+    var lastSig = '', sigN = 0, sigT = setInterval(function () {
+      var sig = [sjQim(), step(), minQty(), m2Factor()].join('|');
+      if (sig !== lastSig) { lastSig = sig; render(); }
+      if (++sigN > 40) clearInterval(sigT);
+    }, 300);
 
     window.sjDetail = { version: VERSION, state: S, render: render, qim: qim, tiers: tiers };
     log('verze', VERSION, '- kalkulátor', calcOn ? 'ano' : 'čeká na sj.js', '- sleva', qdOn ? 'ano' : 'ne');
@@ -492,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function () {
     log('chybí styly v simplejack.css, nic neměním');
     return;
   }
-  onReady(function () {
-    try { product(); } catch (e) { root.classList.add('sj-calc-fallback'); log('chyba', e); }
-  });
+  function start() { try { product(); } catch (e) { root.classList.add('sj-calc-fallback'); log('chyba', e); } }
+  // skript je v zápatí, formulář produktu už je ve stránce: spustit hned, ať se kalkulátor a sleva ukážou spolu se stránkou
+  if (d.getElementById('product-detail-form')) start(); else onReady(start);
 })();
