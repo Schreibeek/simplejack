@@ -2,6 +2,10 @@
 
 Co se na webu změnilo a kdy. Nové záznamy patří nahoru.
 
+## 24. 10. 2026
+
+- Detail produktu na PC (od 992 px): pravý sloupec končí 40 px nad benefity, stejně jako levý. Když byl pravý sloupec delší (po výběru varianty nebo s rozbalenou slevou), byl box Vzorek zdarma nalepený na benefity (mezera 20 px), teď je mezi nimi 60 px. Když je delší levý sloupec, nic se nemění. Na mobilu beze změny. Pravidlo je v css/simplejack.css.
+
 ## 23. 10. 2026
 
 - Filtr v parametrických kategoriích (31 kategorií, např. /gumove-podlahy-do-garaze/) je ve výchozím stavu zavřený. Shoptet bral přednastavený filtr jako aktivní a sám ho otevíral. První produkty jsou teď na desktopu na 720 px (dřív 2 557 px) a na mobilu na 1 029 px (dřív 4 988 px). Běžné kategorie a stránky, kde si zákazník už něco vyfiltroval, se nemění. Skript je v js/simplejack.js (Freelo 33266225).

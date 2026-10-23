@@ -17,7 +17,8 @@
 
 /* PRODUKT */
 .p-to-cart-block,.quantity-discounts,.info-banner {background:var(--sj-bg);}
-@media (min-width: 992px) {.wide .p-detail-inner .p-image-wrapper {margin-bottom: 40px;}}
+/* Oba sloupce detailu končí 40 px nad benefity, i když je delší pravý (jinak je na nich vzorek zdarma nalepený) */
+@media (min-width: 992px) {.wide .p-detail-inner .p-image-wrapper,.wide .p-detail-inner .p-data-wrapper {margin-bottom: 40px;}}
 .p-detail-inner .social-buttons-wrapper {display:none;}
 #accordion-content .shp-accordion .shp-accordion-link {color:var(--sj-brand);border-bottom:3px solid var(--sj-line);padding-bottom:3px;}
 .p-detail-inner-header-mobile .h1 {color: var(--sj-brand);font-size: 2.7rem;}
