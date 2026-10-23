@@ -26,7 +26,7 @@ html.sj-test .detail-parameters tr.sj-code-row.is-empty { display: none !importa
 html.sj-test .p-variants-block.sj-variants-hint { position: relative; }
 html.sj-test .p-variants-block.sj-variants-hint::after { content: ""; position: absolute; left: -9px; right: -9px; top: -9px; bottom: calc(var(--sj-hint-gap, 0px) - 13px); border: 3px solid var(--color-primary, #fd7e31); pointer-events: none; z-index: 1; }
 
-/* --- cena v bloku Do košíku (cena celkem, pod ní cena za kus a sleva) --- */
+/* --- cena v bloku Do košíku (cena celkem, pod ní cena za kus a m²) --- */
 html.sj-test .sj-price { display: none; }
 html.sj-test .p-to-cart-block.sj-price-on .sj-price { display: block; }
 html.sj-test .sj-price__final { display: block; font-size: 32px; line-height: 32px; font-weight: 600; white-space: nowrap; color: var(--colors-foregrounds-content-primary, #1f1f1f); }

@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '2026-10-24.2';
+  var VERSION = '2026-10-24.3';
   var CHIPS = [10, 20, 30, 50, 100];
   var M2_STEP = 0.5; // krok tlačítek - a + u plochy (i šipek na klávesnici)
   var CUT = 1.1;
@@ -123,6 +123,11 @@
       var a = sjQim(), b = paramQim();
       if (a > 0 && b > 0 && a !== b && !S.warned) { S.warned = true; log('kusů na m² se liší: sj.js', a, 'parametr', b, '- beru sj.js'); }
       return a > 0 ? a : b;
+    }
+    // přepočet ceny za kus na cenu za m² stejně jako sj.js (cena za m² / cena za kus), jinak kusy na m²
+    function m2Factor() {
+      try { if (typeof measureUnit === 'number' && typeof measurePriceSolid === 'number' && measureUnit > 0 && measurePriceSolid > 0) return measureUnit / measurePriceSolid; } catch (x) {}
+      return qim();
     }
     function step() { var s = parseFloat(amount.getAttribute('step')); return s > 0 ? s : 1; }
     function minQty() { var m = parseFloat(amount.getAttribute('min')); return m > 0 ? m : 1; }
@@ -388,17 +393,17 @@
       var active = v.chosen && v.base > 0 && (calcOn || qdOn);
       cart.classList.toggle('sj-price-on', !!active);
       if (!active) return;
-      var u = unit(v.base, q), off = offOf(ratio(q));
+      var u = unit(v.base, q), off = offOf(ratio(q)), qm = m2Factor();
+      var perM2 = qm > 0 ? kc(round2(u * qm)) + ' / m2' : '';
       var su = stdUnit();
       if (su > u) { setHtml(priceStdEl, '<del>' + kc(round2(su * q)) + '</del>-' + Math.round((1 - u / su) * 100) + '\u00a0%'); priceStdEl.hidden = false; }
       else priceStdEl.hidden = true;
       if (q > 1) {
         setText(priceFinalEl, kc(round2(u * q)));
-        // pod cenou celkem cena za kus a sleva, cena za m² v bloku není
-        setText(priceMeasureEl, kc(u) + ' / ks' + (off ? ' (sleva ' + off + '\u00a0%)' : ''));
+        setText(priceMeasureEl, kc(u) + ' / ks' + (perM2 ? ' · ' + perM2 : '') + (off ? ' (sleva ' + off + '\u00a0%)' : ''));
       } else {
         setText(priceFinalEl, kc(u) + ' / ks');
-        setText(priceMeasureEl, '');
+        setText(priceMeasureEl, perM2);
       }
     }
 
