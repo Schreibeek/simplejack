@@ -5,6 +5,7 @@ Vlastní CSS, JS a zálohy pro e-shop simplejack.cz (Shoptet).
 - css/simplejack.css - vlastní styly, načítá se v záhlaví Shoptetu
 - js/simplejack.js - vlastní skripty, načítá se v zápatí Shoptetu
 - zalohy/ - zálohy stránek a HTML kódů
+- ZMENY.md - co se na webu změnilo a kdy (nové záznamy nahoru)
 
 Soubory běží přes GitHub Pages:
 
