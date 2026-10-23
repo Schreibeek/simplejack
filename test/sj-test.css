@@ -20,23 +20,18 @@ html.sj-test.sj-qd-on #product-detail-form .quantity-discounts { display: none !
 /* cena celkem ze sj.js (strong.price-final > #price-final-measure); nativní akční cena má také price-action, proto ne podle třídy */
 html.sj-test .p-to-cart-block .price-final:has(> #price-final-measure), html.sj-test .p-to-cart-block .sj-old-price { display: none !important; }
 html.sj-test .p-to-cart-block.sj-price-on .p-final-price-wrapper > .price-final,
-html.sj-test .p-to-cart-block.sj-price-on .p-final-price-wrapper > .price-measure { display: none !important; }
+html.sj-test .p-to-cart-block.sj-price-on.sj-measure-on .p-final-price-wrapper > .price-measure { display: none !important; }
 html.sj-test .detail-parameters tr.sj-code-row.is-empty { display: none !important; }
 /* zvýraznění variant po kliknutí na výzvu: rámeček kolem popisku a vzorků, dole 10 px pod vzorky (--sj-hint-gap počítá JS) */
 html.sj-test .p-variants-block.sj-variants-hint { position: relative; }
 html.sj-test .p-variants-block.sj-variants-hint::after { content: ""; position: absolute; left: -9px; right: -9px; top: -9px; bottom: calc(var(--sj-hint-gap, 0px) - 13px); border: 3px solid var(--color-primary, #fd7e31); pointer-events: none; z-index: 1; }
 
-/* --- cena v bloku Do košíku (cena celkem, pod ní cena za kus a m²) --- */
+/* --- cena v bloku Do košíku jako bez testu (za kus, po zadání plochy celkem, pod ní za m²), jen spočítaná přesně --- */
 html.sj-test .sj-price { display: none; }
 html.sj-test .p-to-cart-block.sj-price-on .sj-price { display: block; }
 html.sj-test .sj-price__final { display: block; font-size: 32px; line-height: 32px; font-weight: 600; white-space: nowrap; color: var(--colors-foregrounds-content-primary, #1f1f1f); }
 html.sj-test .sj-price__measure { display: block; margin-top: 4px; font-size: 16px; line-height: 24px; font-weight: 400; color: var(--colors-foregrounds-content-primary, #1f1f1f); }
 html.sj-test .sj-price__measure:empty { display: none; }
-html.sj-test .p-to-cart-block.sj-price-on .p-final-price-wrapper > .price-standard,
-html.sj-test .p-to-cart-block.sj-price-on .p-final-price-wrapper > .price-save { display: none !important; }
-html.sj-test .sj-price__std { display: block; font-size: 16px; line-height: 32px; font-weight: 400; color: var(--colors-foregrounds-content-secondary, #4d4d4d); }
-html.sj-test .sj-price__std[hidden] { display: none !important; }
-html.sj-test .sj-price__std del { margin-right: 5px; text-decoration: line-through; }
 
 /* ========== Kalkulátor plochy (sj-calc) ========== */
 html.sj-test .sj-calc[hidden], html.sj-test .sj-qd[hidden],

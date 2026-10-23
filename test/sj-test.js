@@ -6,13 +6,13 @@
    - kalkulátor plochy místo #measure-banner ze sj.js (jen u produktů, kde sj.js kalkulačku ukazuje),
      přepočítá m² na kusy a zapíše je do pole množství v bloku Do košíku,
    - množstevní sleva místo tabulky Shoptetu (jen kde je .quantity-discounts),
-   - v bloku Do košíku cena celkem podle hladiny slevy,
+   - v bloku Do košíku cena jako bez testu (za kus, po zadání plochy celkem, pod ní za m²), jen spočítaná přesně se slevou,
    - řádek Kód v parametrech až po výběru varianty.
    Na každé stránce ukáže štítek Testovací verze s odkazem na vypnutí. */
 (function () {
   'use strict';
 
-  var VERSION = '2026-10-24.3';
+  var VERSION = '2026-10-24.4';
   var CHIPS = [10, 20, 30, 50, 100];
   var M2_STEP = 0.5; // krok tlačítek - a + u plochy (i šipek na klávesnici)
   var CUT = 1.1;
@@ -30,6 +30,8 @@
   }
   function round2(n) { return Math.round(n * 100) / 100; }
   function fmt(n) { return n.toLocaleString('cs-CZ', { maximumFractionDigits: 2 }); }
+  // plocha v poli kalkulátoru vždy aspoň s jednou desetinou (10,0 / 10,5), ať číslo neskáče
+  function fmtM2(n) { return n.toLocaleString('cs-CZ', { minimumFractionDigits: 1, maximumFractionDigits: 2 }); }
   function kc(n) {
     var dec = Math.round(n * 100) % 100 !== 0;
     return n.toLocaleString('cs-CZ', { minimumFractionDigits: dec ? 2 : 0, maximumFractionDigits: dec ? 2 : 0 }) + '\u00a0Kč';
@@ -165,21 +167,10 @@
 
     /* ---------- cena v bloku Do košíku ---------- */
     var price = el('div', 'sj-price');
-    var priceStdEl = el('span', 'sj-price__std');
     var priceFinalEl = el('strong', 'sj-price__final');
     var priceMeasureEl = el('span', 'sj-price__measure');
-    priceStdEl.hidden = true;
-    price.appendChild(priceStdEl);
     price.appendChild(priceFinalEl);
     price.appendChild(priceMeasureEl);
-    // přeškrtnutá běžná cena u akčních produktů: v bloku ji ukazujeme sami, aby seděla k ceně celkem
-    var stdEl = qs('.price-standard', priceWrap || cart);
-    function stdUnit() {
-      if (!stdEl) return NaN;
-      var spans = qsa('.choose-variant', stdEl).filter(function (h) { return !h.classList.contains('default-variant'); });
-      var vis = spans.filter(shown);
-      return spans.length ? (vis.length ? parseNum(txt(vis[0])) : NaN) : parseNum(txt(stdEl));
-    }
     markOldPrice();
     var nativePf = priceFinal();
     if (nativePf && nativePf.parentNode) nativePf.parentNode.insertBefore(price, nativePf);
@@ -205,7 +196,7 @@
           '<span class="sj-calc__infowrap"><button type="button" class="sj-calc__info" aria-label="Nápověda k ploše" aria-describedby="sj-tip-m2">i</button><span class="sj-calc__tip sj-calc__tip--left" role="tooltip" id="sj-tip-m2"></span></span>' +
           '<span class="sj-calc__in"><span class="sj-calc__stepper">' +
             '<button type="button" class="sj-calc__step" data-d="-1" aria-label="Ubrat 0,5 m²"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10"></path></svg></button>' +
-            '<input id="sj-calc-m2" class="sj-calc__m2" type="text" inputmode="decimal" autocomplete="off" placeholder="0">' +
+            '<input id="sj-calc-m2" class="sj-calc__m2" type="text" inputmode="decimal" autocomplete="off" placeholder="0,0">' +
             '<span class="sj-calc__unit">m²</span>' +
             '<button type="button" class="sj-calc__step" data-d="1" aria-label="Přidat 0,5 m²"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10M6 1v10"></path></svg></button>' +
           '</span><span class="sj-calc__ks" aria-live="polite"></span></span>' +
@@ -227,7 +218,7 @@
         var b = el('button', 'sj-calc__chip');
         b.type = 'button';
         b.textContent = fmt(v) + ' m²';
-        b.addEventListener('click', function () { S.m2 = v; m2Input.value = fmt(v); applyCalc(); });
+        b.addEventListener('click', function () { S.m2 = v; m2Input.value = fmtM2(v); applyCalc(); });
         chips.appendChild(b);
         chipBtns.push({ v: v, b: b });
       });
@@ -256,7 +247,7 @@
         if (e.key === 'Enter') { e.preventDefault(); m2Input.blur(); }
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); stepM2(e.key === 'ArrowUp' ? 1 : -1); }
       });
-      m2Input.addEventListener('blur', function () { m2Input.value = S.m2 ? fmt(S.m2) : ''; });
+      m2Input.addEventListener('blur', function () { m2Input.value = S.m2 ? fmtM2(S.m2) : ''; });
       qsa('.sj-calc__step', open).forEach(function (b) {
         b.addEventListener('click', function () { stepM2(parseFloat(b.getAttribute('data-d'))); });
       });
@@ -288,7 +279,7 @@
       if (nx < M2_STEP) nx = dir > 0 ? M2_STEP : cur;
       if (nx === cur) return;
       S.m2 = nx;
-      m2Input.value = fmt(nx);
+      m2Input.value = fmtM2(nx);
       applyCalc();
     }
     function applyCalc() { var n = pieces(S.m2); if (n) setQty(n); else render(); }
@@ -299,7 +290,7 @@
       teaser.hidden = v.chosen;
       open.hidden = !v.chosen;
       if (!v.chosen) return;
-      var m2Val = S.m2 ? fmt(S.m2) : '';
+      var m2Val = S.m2 ? fmtM2(S.m2) : '';
       if (d.activeElement !== m2Input && m2Input.value !== m2Val) m2Input.value = m2Val;
       var n = pieces(S.m2);
       setText(ksOut, n ? '= ' + ks(n) : '');
@@ -389,22 +380,16 @@
     }
 
     /* ---------- cena ---------- */
+    // jako na webu bez testu: cena za kus, po zadání plochy cena celkem, pod ní cena za m².
+    // Jen se počítá přesně: se slevou podle množství a cena celkem vždy podle množství v košíku.
     function renderPrice(v, q) {
       var active = v.chosen && v.base > 0 && (calcOn || qdOn);
       cart.classList.toggle('sj-price-on', !!active);
       if (!active) return;
-      var u = unit(v.base, q), off = offOf(ratio(q)), qm = m2Factor();
-      var perM2 = qm > 0 ? kc(round2(u * qm)) + ' / m2' : '';
-      var su = stdUnit();
-      if (su > u) { setHtml(priceStdEl, '<del>' + kc(round2(su * q)) + '</del>-' + Math.round((1 - u / su) * 100) + '\u00a0%'); priceStdEl.hidden = false; }
-      else priceStdEl.hidden = true;
-      if (q > 1) {
-        setText(priceFinalEl, kc(round2(u * q)));
-        setText(priceMeasureEl, kc(u) + ' / ks' + (perM2 ? ' · ' + perM2 : '') + (off ? ' (sleva ' + off + '\u00a0%)' : ''));
-      } else {
-        setText(priceFinalEl, kc(u) + ' / ks');
-        setText(priceMeasureEl, perM2);
-      }
+      var u = unit(v.base, q), qm = m2Factor();
+      setText(priceFinalEl, S.m2 && q > 1 ? kc(round2(u * q)) : kc(u) + ' / ks');
+      setText(priceMeasureEl, qm > 0 ? kc(round2(u * qm)) + ' / m2' : '');
+      cart.classList.toggle('sj-measure-on', qm > 0);
     }
 
     function renderCode() {
