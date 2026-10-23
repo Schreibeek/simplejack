@@ -12,8 +12,9 @@
 (function () {
   'use strict';
 
-  var VERSION = '2026-10-23.8';
+  var VERSION = '2026-10-24.1';
   var CHIPS = [10, 20, 30, 50, 100];
+  var M2_STEP = 0.5; // krok tlačítek - a + u plochy (i šipek na klávesnici)
   var CUT = 1.1;
   var d = document;
   var root = d.documentElement;
@@ -203,10 +204,10 @@
           '<label class="sj-calc__q" for="sj-calc-m2">Kolik m² potřebujete?</label>' +
           '<span class="sj-calc__infowrap"><button type="button" class="sj-calc__info" aria-label="Nápověda k ploše" aria-describedby="sj-tip-m2">i</button><span class="sj-calc__tip sj-calc__tip--left" role="tooltip" id="sj-tip-m2"></span></span>' +
           '<span class="sj-calc__in"><span class="sj-calc__stepper">' +
-            '<button type="button" class="sj-calc__step" data-d="-1" aria-label="Ubrat 1 m²"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10"></path></svg></button>' +
+            '<button type="button" class="sj-calc__step" data-d="-1" aria-label="Ubrat 0,5 m²"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10"></path></svg></button>' +
             '<input id="sj-calc-m2" class="sj-calc__m2" type="text" inputmode="decimal" autocomplete="off" placeholder="0">' +
             '<span class="sj-calc__unit">m²</span>' +
-            '<button type="button" class="sj-calc__step" data-d="1" aria-label="Přidat 1 m²"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10M6 1v10"></path></svg></button>' +
+            '<button type="button" class="sj-calc__step" data-d="1" aria-label="Přidat 0,5 m²"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10M6 1v10"></path></svg></button>' +
           '</span><span class="sj-calc__ks" aria-live="polite"></span></span>' +
         '</div></div>' +
         '<div class="sj-calc__row2"><div class="sj-calc__chips" role="group" aria-label="Rychlá volba plochy"></div>' +
@@ -280,9 +281,11 @@
       root.classList.add('sj-calc-on');
     }
     function closeTips() { qsa('.sj-calc__tip.is-visible').forEach(function (t) { t.classList.remove('is-visible'); }); }
-    function stepM2(dlt) {
-      var cur = S.m2 || 0, nx = round2(cur + dlt);
-      if (nx < 1) nx = dlt > 0 ? 1 : cur;
+    function stepM2(dir) {
+      // po půl metru; z hodnoty mimo krok (např. 10,3) jde + na 10,5 a - na 10
+      var cur = S.m2 || 0, k = cur / M2_STEP;
+      var nx = round2((dir > 0 ? Math.floor(k + 1e-9) + 1 : Math.ceil(k - 1e-9) - 1) * M2_STEP);
+      if (nx < M2_STEP) nx = dir > 0 ? M2_STEP : cur;
       if (nx === cur) return;
       S.m2 = nx;
       m2Input.value = fmt(nx);
@@ -397,7 +400,9 @@
       else priceStdEl.hidden = true;
       if (q > 1) {
         setText(priceFinalEl, kc(round2(u * q)));
-        setText(priceMeasureEl, kc(u) + ' / ks' + (perM2 ? ' · ' + perM2 : '') + (off ? ' (sleva ' + off + '\u00a0%)' : ''));
+        // pod cenou celkem jen cena za m² a sleva, cena za kus tu není
+        var offTxt = off ? 'sleva ' + off + '\u00a0%' : '';
+        setText(priceMeasureEl, perM2 && offTxt ? perM2 + ' (' + offTxt + ')' : (perM2 || offTxt));
       } else {
         setText(priceFinalEl, kc(u) + ' / ks');
         setText(priceMeasureEl, perM2);
