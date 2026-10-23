@@ -2,6 +2,15 @@
 
 Co se na webu změnilo a kdy. Nové záznamy patří nahoru. Drobné úpravy vzhledu (mezery, odsazení) se sem nepíšou.
 
+## 24. 10. 2026
+
+- Kalkulátor plochy, množstevní sleva, cena v bloku Do košíku a řádek Kód po výběru varianty jsou pro všechny zákazníky, předtím jen v testovací verzi. Kód je v js/simplejack.js, styly v css/simplejack.css.
+  - Kalkulátor plochy místo staré kalkulačky ze sj.js: před výběrem barvy výzva, po výběru pole m² s - a + po 0,5 m² (vždy s desetinou), rychlá volba 10 až 100 m², 10% prořez a nápovědy. Kusy zapíše do množství v košíku. Kusy na m² a krok bere ze sj.js, stará kalkulačka tam dál běží schovaná a nesmí se vypnout.
+  - Množstevní sleva místo tabulky Shoptetu, jen u produktů se slevou: lišta se zprávou podle množství, po rozkliknutí cenové hladiny, tip na další hladinu a tlačítko Nastavit X ks.
+  - Cena v bloku Do košíku vypadá jako dřív, jen se počítá přesně se slevou. Po zadání plochy ukáže cenu celkem (Solum Skin 30 m² = 120 ks za 35 532 Kč, stará kalkulačka ukazovala 39 480 Kč bez slevy), pod ní cenu za m².
+  - Řádek Kód v parametrech se ukáže až po výběru varianty.
+- Testovací verze (?sjtest=1) je teď prázdná, jen se štítkem, a je připravená na další test.
+
 ## 23. 10. 2026
 
 - Filtr v parametrických kategoriích (31 kategorií, např. /gumove-podlahy-do-garaze/) je ve výchozím stavu zavřený. Shoptet bral přednastavený filtr jako aktivní a sám ho otevíral. První produkty jsou teď na desktopu na 720 px (dřív 2 557 px) a na mobilu na 1 029 px (dřív 4 988 px). Běžné kategorie a stránky, kde si zákazník už něco vyfiltroval, se nemění. Skript je v js/simplejack.js (Freelo 33266225).
