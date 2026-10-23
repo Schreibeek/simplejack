@@ -128,7 +128,8 @@ html.sj-test .sj-qd__nudge .is-save { font-weight: 700; color: var(--colors-stat
 html.sj-test .sj-qd__set { display: inline-flex; align-items: center; height: 40px; min-height: 0; margin: 0; padding: 0 16px; background: var(--colors-surface-primary, #fff); border: 1px solid var(--sj-accent-ink); border-radius: 0; box-shadow: none; color: var(--sj-accent-ink); font-family: inherit; font-size: 15px; line-height: 1; font-weight: 900; text-transform: none; cursor: pointer; -webkit-appearance: none; appearance: none; }
 html.sj-test .sj-qd__set:hover { background: var(--sj-accent-ink); color: #fff; }
 html.sj-test .sj-qd__set:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
-html.sj-test .sj-qd__note { margin: 10px 0 0; font-size: 14px; line-height: 20px; color: var(--sj-ink-muted, #666); }
+/* Shoptet dává odstavcům na kartě margin 0 0 22px, proto !important: poznámka 10 px pod dlaždicemi, pod ní jen padding panelu */
+html.sj-test .sj-qd p.sj-qd__note { margin: 10px 0 0 !important; padding: 0; font-size: 14px; line-height: 20px; color: var(--sj-ink-muted, #666); }
 
 @media (max-width: 560px) {
   /* na mobilu výzva bez šipky, ať je víc místa na text */
