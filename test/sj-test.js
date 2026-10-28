@@ -37,7 +37,8 @@
   var CACHE_KEY = 'sjFaq:v1';
   var CACHE_MS = 6 * 60 * 60 * 1000;
   var CHEVRON = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 2l4 4-4 4"/></svg>';
-  var PHONE_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>';
+  var MAIL_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14"/><path d="M3 7l9 6 9-6"/></svg>';
+  var PHONE_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>';
 
   function isVinyl() {
     var txt = '';
@@ -91,22 +92,34 @@
   function prefetch() { load().catch(function () {}); }
 
   /* vykreslení obsahu záložky */
-  function phone() {
-    var t = qs('a[href^="tel:"]');
-    var num = t ? t.textContent.replace(/\s+/g, ' ').trim() : '737 593 577';
-    var href = t ? t.getAttribute('href') : 'tel:+420737593577';
-    return { num: num, href: href };
+  // telefon a e-mail bereme z odkazů na stránce (patička), ať platí to, co má e-shop nastavené
+  function contact(prefix, fallbackText, fallbackHref) {
+    var t = qs('a[href^="' + prefix + '"]');
+    if (!t && !fallbackHref) return null;
+    return {
+      text: t ? (t.textContent.replace(/\s+/g, ' ').trim() || t.getAttribute('href').replace(prefix, '')) : fallbackText,
+      href: t ? t.getAttribute('href') : fallbackHref
+    };
+  }
+  function contactLink(cls, icon, c, eventName) {
+    var a = el('a', cls, icon + '<span></span>');
+    a.href = c.href;
+    a.lastChild.textContent = c.text;
+    a.addEventListener('click', function () { track({ event: eventName }); });
+    return a;
   }
   function help() {
-    var box = el('aside', 'sj-faq__help');
-    var ph = phone();
-    box.appendChild(el('div', 'sj-faq__help-title', 'Nenašli jste odpověď?'));
-    box.appendChild(el('p', 'sj-faq__help-text', 'Zavolejte nám nebo napište do chatu, poradíme s výběrem i pokládkou.'));
-    var tel = el('a', 'sj-faq__phone', PHONE_ICON + '<span></span>');
-    tel.href = ph.href;
-    tel.lastChild.textContent = ph.num;
-    tel.addEventListener('click', function () { track({ event: 'sj_faq_phone' }); });
-    box.appendChild(tel);
+    var aside = el('aside', 'sj-faq__aside');
+    var box = el('div', 'sj-faq__help');
+    var head = el('div', 'sj-faq__help-head');
+    head.appendChild(el('div', 'sj-faq__help-title', 'Nenašli jste odpověď?'));
+    head.appendChild(el('p', 'sj-faq__help-text', 'Zavolejte nám nebo napište, poradíme s výběrem i pokládkou.'));
+    box.appendChild(head);
+    var actions = el('div', 'sj-faq__help-actions');
+    var tel = contact('tel:', '737 593 577', 'tel:+420737593577');
+    actions.appendChild(contactLink('sj-faq__contact sj-faq__contact--phone', PHONE_ICON, tel, 'sj_faq_phone'));
+    var mail = contact('mailto:');
+    if (mail) actions.appendChild(contactLink('sj-faq__contact', MAIL_ICON, mail, 'sj_faq_email'));
     if (typeof window.smartsupp === 'function') {
       var chat = el('button', 'sj-faq__chat');
       chat.type = 'button';
@@ -115,9 +128,11 @@
         track({ event: 'sj_faq_chat' });
         try { window.smartsupp('chat:open'); } catch (x) {}
       });
-      box.appendChild(chat);
+      actions.appendChild(chat);
     }
-    return box;
+    box.appendChild(actions);
+    aside.appendChild(box);
+    return aside;
   }
   function render(pane, items) {
     var wrap = el('div', 'sj-faq');

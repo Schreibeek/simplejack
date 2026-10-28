@@ -1,5 +1,5 @@
 /* SimpleJack - testovací verze. Načítá se jen v prohlížeči, kde je zapnutý test (?sjtest=1, viz js/simplejack.js).
-   Teď v ní je záložka Časté dotazy na detailu produktu (od 28. 10. 2026) a štítek Testovací verze.
+   Teď v ní je záložka Časté dotazy na detailu produktu, kratší názvy záložek (od 28. 10. 2026) a štítek Testovací verze.
    Kalkulátor plochy a sleva z prvního testu jsou od 24. 10. 2026 pro všechny v css/simplejack.css a js/simplejack.js. */
 
 /* --- štítek testovací verze --- */
@@ -8,12 +8,22 @@ html.sj-test .sj-test-badge a { color: #fff; text-decoration: underline; }
 html.sj-test .sj-test-badge a:hover { color: #fff; text-decoration: none; }
 
 /* --- Časté dotazy: záložka na detailu produktu (test/sj-test.js) ---
-   Podle komponenty Faq z design systému: položka s rámečkem 1px sj-line, mezera 10 px, otázka tučně s šipkou
-   vlevo (otočí se o 90°), odpověď 0 14px 14px. Vpravo panel bez rámečku na sj-bg jako ostatní panely na kartě. */
-html.sj-test .sj-faq { max-width: 1100px; margin: 0 auto; padding: 30px 0 40px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 40px; align-items: start; }
-html.sj-test .sj-faq__state { grid-column: 1 / -1; margin: 0; font-size: 15px; line-height: 22px; color: var(--sj-ink-muted, #666); }
+   Rozvržení jako záložka Popis (Shoptet .description-inner): od 1200 px dva sloupce, vlevo 2/3 s mezerou 40 px
+   (dotazy), vpravo 1/3 (panel s kontaktem, při posouvání zůstává nahoře); pod 1200 px pod sebou. Obsah začíná
+   hned pod řádkem záložek jako u Popisu, bez vlastního odsazení.
+   Dotazy podle komponenty Faq z design systému: položka s rámečkem 1px sj-line, mezera 10 px, otázka tučně se
+   šipkou vlevo (otočí se o 90°), odpověď 0 14px 14px. Panel bez rámečku na sj-bg jako ostatní panely na kartě. */
+html.sj-test .sj-faq { display: flex; flex-wrap: wrap; align-items: flex-start; padding: 0 0 20px; }
+html.sj-test .sj-faq__state { flex: 0 0 100%; margin: 0; font-size: 16px; line-height: 24px; color: var(--sj-ink-muted, #666); }
 html.sj-test .sj-faq__state a { color: var(--sj-accent-ink, #b64702); text-decoration: underline; }
-html.sj-test .sj-faq__list { min-width: 0; }
+html.sj-test .sj-faq__list { box-sizing: border-box; flex: 0 0 100%; max-width: 100%; min-width: 0; }
+html.sj-test .sj-faq__aside { box-sizing: border-box; flex: 0 0 100%; max-width: 100%; margin-top: 30px; }
+@media (min-width: 1200px) {
+  html.sj-test .sj-faq { flex-wrap: nowrap; }
+  html.sj-test .sj-faq__list { flex-basis: 66.6667%; max-width: 66.6667%; padding-right: 40px; }
+  html.sj-test .sj-faq__aside { flex-basis: 33.3333%; max-width: 33.3333%; margin-top: 0; position: sticky; top: 20px; }
+}
+
 html.sj-test .sj-faq__item { margin: 0 0 10px; border: 1px solid var(--sj-line, #e6eaed); background: var(--colors-surface-primary, #fff); }
 html.sj-test .sj-faq__item:last-child { margin-bottom: 0; }
 html.sj-test .sj-faq__q { display: flex; align-items: center; gap: 10px; padding: 14px; font-size: 16px; line-height: 24px; font-weight: 700; color: var(--sj-ink, #222); cursor: pointer; list-style: none; }
@@ -39,31 +49,37 @@ html.sj-test .sj-faq__a iframe,
 html.sj-test .sj-faq__a video { display: block; width: 100%; max-width: 640px; height: auto; aspect-ratio: 16 / 9; margin: 14px 0; border: 0; }
 html.sj-test .sj-faq__a img { max-width: 100%; height: auto; }
 
-/* panel Nenašli jste odpověď? */
-html.sj-test .sj-faq__help { padding: 20px; background: var(--sj-bg, #f6f8f9); }
-html.sj-test .sj-faq__help-title { margin: 0 0 6px; font-size: 18px; line-height: 25.2px; font-weight: 700; color: var(--sj-brand, #0b5668); }
-html.sj-test .sj-faq__help-text { margin: 0 0 14px; font-size: 15px; line-height: 22px; color: var(--colors-foregrounds-content-secondary, #4d4d4d); }
-html.sj-test .sj-faq__phone { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 18px; line-height: 24px; font-weight: 700; color: var(--sj-brand, #0b5668); text-decoration: none; }
-html.sj-test .sj-faq__phone svg { flex: 0 0 18px; color: var(--sj-accent-ink, #b64702); }
-html.sj-test .sj-faq__phone:hover { color: var(--sj-brand, #0b5668); text-decoration: underline; }
-html.sj-test .sj-faq__phone:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
-html.sj-test .sj-faq__chat { display: flex; align-items: center; justify-content: center; width: 100%; height: 40px; min-height: 0; margin: 0; padding: 0 16px; background: var(--colors-surface-primary, #fff); border: 1px solid var(--sj-accent-ink, #b64702); border-radius: 0; box-shadow: none; color: var(--sj-accent-ink, #b64702); font-family: inherit; font-size: 15px; line-height: 1; font-weight: 900; text-transform: none; cursor: pointer; -webkit-appearance: none; appearance: none; }
+/* panel Nenašli jste odpověď? (titulek jako Doplňkové parametry v Popisu: 20 px tučně sj-brand) */
+html.sj-test .sj-faq__help { padding: 24px; background: var(--sj-bg, #f6f8f9); }
+html.sj-test .sj-faq__help-title { margin: 0 0 8px; font-size: 20px; line-height: 26px; font-weight: 700; color: var(--sj-brand, #0b5668); }
+html.sj-test .sj-faq__help-text { margin: 0 0 20px; font-size: 16px; line-height: 24px; color: var(--sj-ink, #222); }
+html.sj-test .sj-faq__help-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+html.sj-test .sj-faq__contact { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--sj-brand, #0b5668); text-decoration: none; word-break: break-word; }
+html.sj-test .sj-faq__contact svg { flex: 0 0 20px; color: var(--sj-accent-ink, #b64702); }
+html.sj-test .sj-faq__contact--phone { font-size: 22px; line-height: 28px; font-weight: 700; }
+html.sj-test .sj-faq__contact:hover { color: var(--sj-brand, #0b5668); text-decoration: underline; }
+html.sj-test .sj-faq__contact:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
+html.sj-test .sj-faq__chat { display: flex; align-items: center; justify-content: center; align-self: stretch; height: 48px; min-height: 0; margin: 8px 0 0; padding: 0 20px; background: var(--colors-surface-primary, #fff); border: 1px solid var(--sj-accent-ink, #b64702); border-radius: 0; box-shadow: none; color: var(--sj-accent-ink, #b64702); font-family: inherit; font-size: 16px; line-height: 1; font-weight: 900; text-transform: none; cursor: pointer; -webkit-appearance: none; appearance: none; }
 html.sj-test .sj-faq__chat:hover { background: var(--sj-accent-ink, #b64702); color: #fff; }
 html.sj-test .sj-faq__chat:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
+/* pod sebou na tabletu: panel přes celou šířku, text vlevo a kontakty vpravo */
+@media (min-width: 768px) and (max-width: 1199px) {
+  html.sj-test .sj-faq__help { display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+  html.sj-test .sj-faq__help-head { flex: 1 1 auto; }
+  html.sj-test .sj-faq__help-text { margin-bottom: 0; }
+  html.sj-test .sj-faq__help-actions { flex: 0 0 300px; }
+}
+@media (max-width: 767px) {
+  html.sj-test .sj-faq { padding: 16px 0 24px; }
+  html.sj-test .sj-faq__q { padding: 12px; }
+  html.sj-test .sj-faq__a { padding: 0 12px 12px; }
+  html.sj-test .sj-faq__aside { margin-top: 20px; }
+  html.sj-test .sj-faq__help { padding: 20px 16px; }
+}
 
 /* --- záložky pod kartou produktu: s Častými dotazy je jich šest. Kratší názvy (Soubory, SimpleJack) dělá
    test/sj-test.js; pod 1440 px navíc užší odsazení (space-24 místo 40 px), ať se vejdou všechny i na 1280 px --- */
 @media (min-width: 768px) and (max-width: 1439px) {
   /* bez animace odsazení (Shoptet má transition: all), jinak by záložky po načtení stylu viditelně cukly */
   html.sj-test #p-detail-tabs .shp-tab-link { padding-left: 24px; padding-right: 24px; transition-property: color, background-color, border-color; }
-}
-
-@media (max-width: 991px) {
-  html.sj-test .sj-faq { grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 20px 0 30px; }
-}
-@media (max-width: 767px) {
-  html.sj-test .sj-faq { padding: 16px 0 24px; }
-  html.sj-test .sj-faq__q { padding: 12px; }
-  html.sj-test .sj-faq__a { padding: 0 12px 12px; }
-  html.sj-test .sj-faq__help { padding: 16px; }
 }
