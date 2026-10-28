@@ -1,5 +1,6 @@
 /* SimpleJack - testovací verze. Načítá se jen v prohlížeči, kde je zapnutý test (?sjtest=1, viz js/simplejack.js).
-   Teď v ní je záložka Časté dotazy na detailu produktu (od 28. 10. 2026) a štítek Testovací verze s odkazem na vypnutí.
+   Teď v ní je záložka Časté dotazy na detailu produktu, kratší názvy záložek Soubory a SimpleJack (od 28. 10. 2026)
+   a štítek Testovací verze s odkazem na vypnutí.
    Kalkulátor plochy a sleva z prvního testu jsou od 24. 10. 2026 pro všechny v js/simplejack.js. */
 (function () {
   'use strict';
@@ -154,6 +155,81 @@
     });
   }
 
+  /* ---------- záložky na detailu produktu: šířky a kratší názvy ---------- */
+  // řádek záložek: div.responsive-nav s ul#p-detail-tabs, tlačítkem menu a ul.hidden-links pro to, co se nevejde
+  function tabsNav() {
+    var ul = d.getElementById('p-detail-tabs');
+    return ul ? (ul.closest('.responsive-nav') || ul.parentElement) : null;
+  }
+  // původní pořadí záložek (Shoptet je při schovávání do menu a vracení přeskládá)
+  var tabOrder = null;
+  function rememberTabOrder() {
+    var nav = tabsNav();
+    if (tabOrder || !nav) return;
+    tabOrder = qsa('li > a', nav).map(function (a) { return a.getAttribute('href'); });
+  }
+  function sortTabs() {
+    var nav = tabsNav();
+    if (!tabOrder || !nav) return;
+    function idx(li) { var a = qs('a', li); var i = a ? tabOrder.indexOf(a.getAttribute('href')) : -1; return i < 0 ? 999 : i; }
+    qsa('ul', nav).forEach(function (list) {
+      qsa(':scope > li', list).sort(function (x, y) { return idx(x) - idx(y); }).forEach(function (li) { list.appendChild(li); });
+    });
+  }
+  // Shoptet podle data-width u každé záložky počítá, které se vejdou do řádku a které schová do menu.
+  // Po přidání záložky nebo změně názvu proto šířky změříme znovu a necháme ho přepočítat. Při jednom
+  // resize vrátí do řádku nanejvýš jednu schovanou záložku, proto ho spustíme několikrát po sobě.
+  var relayoutTimer = null;
+  function fixTabWidths() {
+    var ul = d.getElementById('p-detail-tabs');
+    var nav = tabsNav();
+    if (!ul || !nav) return;
+    rememberTabOrder();
+    qsa('li', nav).forEach(function (li) {
+      if (!qs('a', li)) return;
+      var probe = el('li', 'shp-tab');
+      probe.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden';
+      var pa = el('a', 'shp-tab-link');
+      pa.textContent = li.textContent.replace(/\s+/g, ' ').trim();
+      probe.appendChild(pa);
+      ul.appendChild(probe);
+      var w = Math.ceil(probe.getBoundingClientRect().width);
+      ul.removeChild(probe);
+      if (w) li.setAttribute('data-width', String(w));
+    });
+    var n = 0;
+    clearInterval(relayoutTimer);
+    relayoutTimer = setInterval(function () {
+      try { window.dispatchEvent(new Event('resize')); } catch (x) {}
+      n++;
+      if (n >= 6 || (n >= 2 && !qsa('.hidden-links li', nav).length)) {
+        clearInterval(relayoutTimer);
+        setTimeout(sortTabs, 100);
+      }
+    }, 250);
+  }
+  // Názvy záložek Shoptet v administraci měnit nedovolí (v Zobrazení produktů jde jen vypnout Popis značky),
+  // proto je zkracujeme tady. Na desktopu i v akordeonu na mobilu, počet v závorce zůstane.
+  var TAB_NAMES = [
+    { href: '#relatedFiles', re: /^Související soubory/, to: 'Soubory' },
+    { href: '#manufacturerDescription', re: /^Značka\s+/, to: '' }
+  ];
+  function shortTabNames() {
+    rememberTabOrder();
+    var changed = false;
+    [tabsNav(), d.getElementById('accordion-content')].forEach(function (scope) {
+      if (!scope) return;
+      TAB_NAMES.forEach(function (r) {
+        qsa('a[href="' + r.href + '"]', scope).forEach(function (a) {
+          var t = a.textContent.replace(/\s+/g, ' ').trim();
+          var n = t.replace(r.re, r.to).trim();
+          if (n && n !== t) { a.textContent = n; changed = true; }
+        });
+      });
+    });
+    if (changed) fixTabWidths();
+  }
+
   /* záložka na desktopu (Shoptet vykreslí ul#p-detail-tabs a panely v #tab-content) */
   function addTab() {
     var ul = d.getElementById('p-detail-tabs');
@@ -172,13 +248,11 @@
     li.appendChild(a);
     var first = qs(':scope > li', ul);
     ul.insertBefore(li, first ? first.nextSibling : null);
-    li.setAttribute('data-width', String(Math.ceil(li.getBoundingClientRect().width) || 200));
     var pane = el('div', 'tab-pane fade');
     pane.id = FAQ_ID;
     pane.setAttribute('role', 'tabpanel');
     content.appendChild(pane);
-    // Shoptet si přepočítá, které záložky se vejdou do řádku, a zbytek schová do menu
-    try { window.dispatchEvent(new Event('resize')); } catch (x) {}
+    fixTabWidths();
     ['mouseenter', 'focus', 'touchstart'].forEach(function (ev) { a.addEventListener(ev, prefetch, { passive: true }); });
     a.addEventListener('click', function () { fill(pane); });
     if (window.jQuery) window.jQuery(a).on('shown.bs.tab', function () { fill(pane); });
@@ -187,12 +261,7 @@
       anchor: ul,
       link: a,
       // po doplnění počtu je záložka širší, Shoptet musí znovu spočítat, co se vejde
-      relayout: function () {
-        var w = Math.ceil(li.getBoundingClientRect().width);
-        if (!w) w = (parseInt(li.getAttribute('data-width'), 10) || 200) + 45;
-        li.setAttribute('data-width', String(w));
-        try { window.dispatchEvent(new Event('resize')); } catch (x) {}
-      },
+      relayout: fixTabWidths,
       open: function () {
         if (window.jQuery && window.jQuery.fn && window.jQuery.fn.tab) window.jQuery(a).tab('show');
         else a.click();
@@ -285,5 +354,6 @@
   onReady(function () {
     badge();
     try { faq(); } catch (e) { log('časté dotazy: chyba', e); }
+    try { if (d.body.classList.contains('type-detail')) shortTabNames(); } catch (e) { log('názvy záložek: chyba', e); }
   });
 })();
