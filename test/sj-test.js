@@ -27,8 +27,9 @@
 
   /* ---------- Časté dotazy jako záložka na detailu produktu ----------
      Otázky se berou ze stránky Nejčastější dotazy (rozbalovací <details>), takže se spravují jen tam.
-     Při načtení produktu se nic nestahuje: stránka s dotazy se načte až při najetí na záložku nebo kliknutí
-     a do konce návštěvy zůstane uložená v sessionStorage. Zatím jen u vinylových podlah, dotazy jsou psané pro vinyl. */
+     Stránka s dotazy se stáhne jednou za návštěvu, až je produkt načtený a prohlížeč nic nedělá (kvůli počtu
+     v názvu záložky), nebo dřív při najetí na záložku či kliknutí. Pak zůstane uložená v sessionStorage.
+     Zatím jen u vinylových podlah, dotazy jsou psané pro vinyl. */
   var FAQ_URL = '/caste-dotazy-podlaha-simplejack-faq/';
   var FAQ_ID = 'sjFaq';
   var FAQ_LABEL = 'Časté dotazy';
@@ -184,6 +185,14 @@
     return {
       pane: pane,
       anchor: ul,
+      link: a,
+      // po doplnění počtu je záložka širší, Shoptet musí znovu spočítat, co se vejde
+      relayout: function () {
+        var w = Math.ceil(li.getBoundingClientRect().width);
+        if (!w) w = (parseInt(li.getAttribute('data-width'), 10) || 200) + 45;
+        li.setAttribute('data-width', String(w));
+        try { window.dispatchEvent(new Event('resize')); } catch (x) {}
+      },
       open: function () {
         if (window.jQuery && window.jQuery.fn && window.jQuery.fn.tab) window.jQuery(a).tab('show');
         else a.click();
@@ -233,7 +242,7 @@
         if (open) fill(pane);
       }, 0);
     });
-    return { pane: pane, anchor: item, open: function () { set(true); } };
+    return { pane: pane, anchor: item, link: a, open: function () { set(true); } };
   }
 
   function faq() {
@@ -254,7 +263,23 @@
       openAndScroll();
     });
     if (/^#(faq|caste-dotazy|sjfaq)$/i.test(location.hash)) openAndScroll();
+    // počet dotazů v názvu záložky: z uložených dat hned, jinak až je stránka načtená a prohlížeč nic nedělá
+    function setCount(n) {
+      if (!n) return;
+      ctl.link.textContent = FAQ_LABEL + ' (' + n + ')';
+      if (ctl.relayout) ctl.relayout();
+    }
+    var cached = fromCache();
+    if (cached) setCount(cached.length);
+    else whenIdle(function () { load().then(function (items) { setCount(items.length); }, function () {}); });
     log('časté dotazy: záložka přidaná');
+  }
+  function whenIdle(fn) {
+    function go() {
+      if ('requestIdleCallback' in window) window.requestIdleCallback(fn, { timeout: 3000 });
+      else setTimeout(fn, 1500);
+    }
+    if (d.readyState === 'complete') go(); else window.addEventListener('load', go);
   }
 
   onReady(function () {
