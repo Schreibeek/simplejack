@@ -34,7 +34,7 @@
   var FAQ_URL = '/caste-dotazy-podlaha-simplejack-faq/';
   var FAQ_ID = 'sjFaq';
   var FAQ_LABEL = 'Časté dotazy';
-  var CACHE_KEY = 'sjFaq:v1';
+  var CACHE_KEY = 'sjFaq:v2'; // při změně zpracování dotazů zvýšit, ať se nepoužijí stará uložená data
   var CACHE_MS = 6 * 60 * 60 * 1000;
   var CHEVRON = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 2l4 4-4 4"/></svg>';
   var MAIL_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14"/><path d="M3 7l9 6 9-6"/></svg>';
@@ -62,6 +62,10 @@
     return null;
   }
   function toCache(items) { try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), items: items })); } catch (x) {} }
+  // text přímo v prvku (mimo vnořené prvky)
+  function ownText(e) {
+    return Array.prototype.some.call(e.childNodes, function (n) { return n.nodeType === 3 && n.textContent.replace(/\u00a0/g, ' ').trim(); });
+  }
   function parse(html) {
     var doc = new DOMParser().parseFromString(html, 'text/html');
     return qsa('details', doc).map(function (det) {
@@ -71,6 +75,16 @@
       var body = det.cloneNode(true);
       body.removeChild(qs('summary', body));
       qsa('script, style', body).forEach(function (s) { s.parentNode.removeChild(s); });
+      // odpověď je na FAQ stránce zabalená v jednom <div> (s vlastním odsazením), obal vynecháme
+      while (body.children.length === 1 && body.firstElementChild.tagName === 'DIV' && !ownText(body)) {
+        body = body.firstElementChild;
+      }
+      // prázdné odstavce na konci (jen mezery nebo &nbsp;) by dělaly zbytečnou mezeru
+      var last = body.lastElementChild;
+      while (last && /^(P|DIV|BR)$/.test(last.tagName) && !last.textContent.replace(/\u00a0/g, ' ').trim() && !last.querySelector('img, iframe, video')) {
+        body.removeChild(last);
+        last = body.lastElementChild;
+      }
       return { q: q, a: body.innerHTML.trim() };
     }).filter(function (it) { return it && it.q && it.a; });
   }

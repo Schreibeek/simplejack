@@ -36,13 +36,15 @@ html.sj-test .sj-faq__item[open] > .sj-faq__q { color: var(--sj-brand, #0b5668);
 @media (hover: hover) { html.sj-test .sj-faq__q:hover { color: var(--sj-brand, #0b5668); } }
 html.sj-test .sj-faq__q:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: -3px; }
 html.sj-test .sj-faq__a { padding: 0 14px 14px; font-size: 16px; line-height: 1.65; color: var(--sj-ink, #222); }
-html.sj-test .sj-faq__a p,
-html.sj-test .sj-faq__a ul,
-html.sj-test .sj-faq__a ol { margin: 0 0 14px; }
-html.sj-test .sj-faq__a ul,
-html.sj-test .sj-faq__a ol { padding-left: 18px; }
-html.sj-test .sj-faq__a li { margin: 4px 0; }
-html.sj-test .sj-faq__a > :last-child { margin-bottom: 0; }
+/* s #sjFaq, ať to přebije okraje odstavců, které Shoptet dává obsahu záložek (22 px) */
+html.sj-test #sjFaq .sj-faq__a p,
+html.sj-test #sjFaq .sj-faq__a ul,
+html.sj-test #sjFaq .sj-faq__a ol { margin: 0 0 14px; }
+html.sj-test #sjFaq .sj-faq__a ul,
+html.sj-test #sjFaq .sj-faq__a ol { padding-left: 18px; }
+html.sj-test #sjFaq .sj-faq__a li { margin: 4px 0; }
+html.sj-test #sjFaq .sj-faq__a > :last-child,
+html.sj-test #sjFaq .sj-faq__a > :last-child > :last-child { margin-bottom: 0; }
 html.sj-test .sj-faq__a a { color: var(--sj-accent-ink, #b64702); text-decoration: underline; }
 html.sj-test .sj-faq__a a:hover { color: var(--sj-brand, #0b5668); text-decoration: none; }
 html.sj-test .sj-faq__a iframe,
