@@ -2,6 +2,19 @@
 
 Co se na webu změnilo a kdy. Nové záznamy patří nahoru. Drobné úpravy vzhledu (mezery, odsazení) se sem nepíšou.
 
+## 28. 10. 2026
+
+- Záložka Časté dotazy na kartě vinylových produktů, hned za Popisem, je pro všechny zákazníky, předtím jen v testovací verzi. Kód je v js/simplejack.js, styly v css/simplejack.css.
+  - Otázky a odpovědi bere ze stránky Nejčastější dotazy (/caste-dotazy-podlaha-simplejack-faq/), upravují se jen tam. Stránka musí zůstat na stejné adrese a dotazy na ní jako rozbalovací bloky. Nová návštěva vidí úpravu hned, rozjetá nejpozději do 6 hodin.
+  - Stránku s dotazy stáhne jednou za návštěvu, až je produkt načtený (kvůli počtu dotazů v názvu záložky), při najetí na záložku dřív. Načítání produktu nezdržuje.
+  - Rozvržení jako Popis: od 1200 px dotazy vlevo (2/3), vpravo panel Nenašli jste odpověď? s telefonem, e-mailem a tlačítkem chatu. Na mobilu položka v akordeonu.
+  - Odkaz na stránku s dotazy v popisu produktu otevře záložku, adresa produktu s #faq ji otevře rovnou.
+  - Do dataLayer posílá sj_faq_open, sj_faq_question (s textem otázky), sj_faq_phone, sj_faq_email a sj_faq_chat. Značky v GTM na ně zatím nejsou.
+  - Jen u vinylu (podle názvu a kategorie produktu), dotazy jsou psané pro vinyl.
+- Kratší názvy záložek na kartě produktu: Soubory místo Související soubory, SimpleJack místo Značka SimpleJack. V administraci Shoptetu je změnit nejde. Pod 1440 px mají záložky menší odsazení, od 1280 px se tak vejdou do jednoho řádku všechny.
+- PoptIn (popup Kalkulace ZDARMA) se už neukazuje v košíku a v objednávce, vyloučené /kosik/ a /objednavka/ (bod 1 auditu, Freelo 32388178).
+- Testovací verze (?sjtest=1) je zase prázdná, jen se štítkem.
+
 ## 24. 10. 2026
 
 - Kalkulátor plochy, množstevní sleva, cena v bloku Do košíku a řádek Kód po výběru varianty jsou pro všechny zákazníky, předtím jen v testovací verzi. Kód je v js/simplejack.js, styly v css/simplejack.css.
