@@ -176,9 +176,9 @@
       qsa(':scope > li', list).sort(function (x, y) { return idx(x) - idx(y); }).forEach(function (li) { list.appendChild(li); });
     });
   }
-  // Shoptet podle data-width u každé záložky počítá, které se vejdou do řádku a které schová do menu.
-  // Po přidání záložky nebo změně názvu proto šířky změříme znovu a necháme ho přepočítat. Při jednom
-  // resize vrátí do řádku nanejvýš jednu schovanou záložku, proto ho spustíme několikrát po sobě.
+  // Shoptet podle data-width u každé záložky počítá, které se vejdou do řádku a které schová do menu
+  // (shpResponsiveNavigation při každém resize okna). Po přidání záložky nebo změně názvu proto šířky
+  // změříme znovu a přepočet spustíme několikrát po sobě, dokud se řádek neustálí.
   var relayoutTimer = null;
   function fixTabWidths() {
     var ul = d.getElementById('p-detail-tabs');
@@ -195,7 +195,10 @@
       ul.appendChild(probe);
       var w = Math.ceil(probe.getBoundingClientRect().width);
       ul.removeChild(probe);
-      if (w) li.setAttribute('data-width', String(w));
+      if (!w) return;
+      li.setAttribute('data-width', String(w));
+      // Shoptet čte šířku přes jQuery .data('width'), která si hodnotu po prvním čtení pamatuje
+      if (window.jQuery) window.jQuery(li).data('width', w);
     });
     var n = 0;
     clearInterval(relayoutTimer);
