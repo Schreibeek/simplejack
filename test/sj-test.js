@@ -266,7 +266,7 @@
     li.appendChild(a);
     var first = qs(':scope > li', ul);
     ul.insertBefore(li, first ? first.nextSibling : null);
-    var pane = el('div', 'tab-pane fade');
+    var pane = el('div', 'tab-pane fade wide-tab'); // wide-tab jako Popis: přes celou šířku
     pane.id = FAQ_ID;
     pane.setAttribute('role', 'tabpanel');
     content.appendChild(pane);
@@ -301,7 +301,7 @@
     a.textContent = FAQ_LABEL;
     var box = el('div', 'shp-accordion-content');
     box.style.display = 'none';
-    var pane = el('div', 'tab-pane fade active in');
+    var pane = el('div', 'tab-pane fade active in wide-tab');
     pane.id = FAQ_ID;
     pane.setAttribute('role', 'tabpanel');
     box.appendChild(pane);
