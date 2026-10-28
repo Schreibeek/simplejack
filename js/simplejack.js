@@ -850,10 +850,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!isVinyl()) { log('časté dotazy: produkt není vinyl, záložku nepřidávám'); return; }
     var ctl = addTab() || addAccordion();
     if (!ctl) { log('časté dotazy: na stránce nejsou záložky ani akordeon'); return; }
+    function pageTop() { return window.pageYOffset || d.documentElement.scrollTop || 0; }
+    function scrollToFaq(behavior) {
+      var top = ctl.anchor.getBoundingClientRect().top + pageTop() - 100;
+      try { window.scrollTo({ top: top, behavior: behavior }); } catch (x) { window.scrollTo(0, top); }
+    }
     function openAndScroll() {
       ctl.open();
-      var top = ctl.anchor.getBoundingClientRect().top + (window.pageYOffset || d.documentElement.scrollTop) - 100;
-      try { window.scrollTo({ top: top, behavior: 'smooth' }); } catch (x) { window.scrollTo(0, top); }
+      scrollToFaq('smooth');
     }
     // odkaz na stránku s dotazy v popisu produktu otevře záložku, místo aby vedl pryč z produktu
     d.addEventListener('click', function (e) {
@@ -862,7 +866,14 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
       openAndScroll();
     });
-    if (/^#(faq|caste-dotazy|sjfaq)$/i.test(location.hash)) openAndScroll();
+    // adresa produktu s #faq: záložka se otevře hned, posun až po načtení stránky (dřív se na webu neudrží)
+    // a jen když zákazník mezitím sám neposunul stránku
+    if (/^#(faq|caste-dotazy|sjfaq)$/i.test(location.hash)) {
+      ctl.open();
+      whenLoaded(function () {
+        setTimeout(function () { if (pageTop() < 100) scrollToFaq('instant'); }, 200);
+      });
+    }
     // počet dotazů v názvu záložky: z uložených dat hned, jinak až je stránka načtená a prohlížeč nic nedělá
     function setCount(n) {
       if (!n) return;
@@ -874,12 +885,12 @@ document.addEventListener('DOMContentLoaded', function () {
     else whenIdle(function () { load().then(function (items) { setCount(items.length); }, function () {}); });
     log('časté dotazy: záložka přidaná');
   }
+  function whenLoaded(fn) { if (d.readyState === 'complete') fn(); else window.addEventListener('load', fn); }
   function whenIdle(fn) {
-    function go() {
+    whenLoaded(function () {
       if ('requestIdleCallback' in window) window.requestIdleCallback(fn, { timeout: 3000 });
       else setTimeout(fn, 1500);
-    }
-    if (d.readyState === 'complete') go(); else window.addEventListener('load', go);
+    });
   }
 
   if (!d.body || !d.body.classList.contains('type-detail')) return;
