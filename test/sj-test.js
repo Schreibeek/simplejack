@@ -240,7 +240,7 @@
       var color = hasVariants ? tileColor() : null;
       var states = items.map(state).filter(Boolean);
       var shown = states.filter(function (st) { return st.ok; });
-      head.innerHTML = '<strong>Doplňky k podlaze</strong>';
+      head.innerHTML = '<strong>Nepovinné doplňky k podlaze</strong>';
       if (hasVariants && !color) head.appendChild(d.createTextNode(' ve stejné barvě, jakou vyberete u podlahy'));
       else if (hasVariants && (!states.length || shown.length)) {
         head.appendChild(d.createTextNode(' ve stejné barvě: '));
@@ -359,9 +359,11 @@
       io.observe(box);
     } else load();
     ['pointerdown', 'focusin'].forEach(function (ev) { box.addEventListener(ev, function () { load(); }, { passive: true }); });
+    // karty dílů už uložené z dřívějška: načíst hned, ať je hned vidět i počet kusů v košíku
+    if (items.every(function (it) { return cached(it.url); })) load();
 
     // změna barvy podlahy a změny košíku jinde (vyskakovací košík, jiný díl)
-    function onVariant() { warn.hidden = true; render(); }
+    function onVariant() { warn.hidden = true; render(); load(); }
     form.addEventListener('change', function (e) { if (e.target && e.target.name === 'priceId') setTimeout(onVariant, 30); });
     ['ShoptetVariantAvailable', 'ShoptetVariantUnavailable'].forEach(function (n) { d.addEventListener(n, function () { setTimeout(onVariant, 30); }); });
     d.addEventListener('ShoptetCartUpdated', function () { setTimeout(function () { qsa('.sj-acc__item', list).forEach(function (li) { if (li._sjSync) li._sjSync(true); }); }, 200); });
