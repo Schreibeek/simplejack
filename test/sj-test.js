@@ -84,7 +84,7 @@
       var k = low(w).replace(/[^a-z0-9áčďéěíňóřšťúůýž]/g, '');
       return !(k && tile.indexOf(k) !== -1) && !(tile.length && colorStem(w) && colorStem(w) === colorStem(tileName));
     }).join(' ');
-    s = norm(s.replace(/\s+-\s*$/, '').replace(/^-\s*/, '').replace(/\s+-\s+(?=\()/, ' ').replace(/\s+-\s*$/, ''));
+    s = norm(s.replace(/\s+-(\s+|$)/g, ' ').replace(/^-\s*/, ''));
     return s ? s.charAt(0).toUpperCase() + s.slice(1) : norm(name);
   }
 
@@ -94,7 +94,8 @@
     if (!cartBlock || !related.length) return;
     var tileName = norm((qs('h1') || qs('.p-detail-inner-header-mobile .h1') || {}).textContent);
     var radios = function () { return qsa('input[type="radio"][name="priceId"]', form).filter(function (i) { return i.value; }); };
-    var hasVariants = radios().length > 0;
+    // podlaha s barvami (varianty Barva: Grafit, ...); u Caladanu jsou varianty jiné, tam se barva dílu nepárují
+    var hasVariants = radios().some(function (i) { var l = i.closest('label'); return l && /Barva:/i.test(l.textContent); });
 
     // díly ze Souvisejících produktů
     var seen = {}, items = [];
@@ -129,9 +130,10 @@
       var sameColor = items.filter(function (it) { return colorStem(it.name) === tileStem; });
       if (sameColor.length) items = sameColor;
     }
-    items.sort(function (a, b) { return ACC_ORDER.indexOf(a.type) - ACC_ORDER.indexOf(b.type); });
-    items = items.slice(0, ACC_MAX);
     items.forEach(function (it) { it.label = shortName(it.name, tileName); });
+    // druh podle pořadí, stejné druhy podle názvu (Černý nájezd samec, Černý nájezd samice, Žlutý ...)
+    items.sort(function (a, b) { return (ACC_ORDER.indexOf(a.type) - ACC_ORDER.indexOf(b.type)) || a.label.localeCompare(b.label, 'cs'); });
+    items = items.slice(0, ACC_MAX);
 
     /* data z karet dílů */
     var loading = null;
@@ -208,7 +210,8 @@
       if (dt.single) return { ok: true, priceId: dt.single.id, price: dt.single.price, img: it.img, date: dt.single.date, avail: dt.single.avail };
       if (!dt.vars.length) return null;
       var min = Math.min.apply(null, dt.vars.map(function (v) { return v.price; }).filter(function (p) { return p > 0; }));
-      if (!hasVariants) return { ok: false, link: true, price: min, from: true, img: it.img };
+      // podlaha bez barev nebo díl s jinými variantami než barvou: vybírá se na kartě dílu
+      if (!hasVariants || !dt.vars.some(function (v) { return v.color; })) return { ok: false, link: true, price: min, from: true, img: it.img };
       if (!color) return { ok: false, needColor: true, price: min, from: true, img: it.img };
       var v = dt.vars.filter(function (x) { return low(x.color) === low(color); })[0];
       if (!v) return { ok: false, missing: color, price: min, from: true, img: it.img };
