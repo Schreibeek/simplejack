@@ -10,7 +10,7 @@ html.sj-test .sj-test-badge a:hover { color: #fff; text-decoration: none; }
 
 /* --- Doplňky k podlaze pod Do košíku (test/sj-test.js, komponenta Accessories v design systému, varianta A) ---
    Rovnou zobrazený seznam: hlavička, řádky v bílém rámečku (fotka 40 px, název, cena, množství, Přidat), po přidání
-   zelená fajfka místo tlačítka. Selektory přes #product-detail-form, ať přebijí styly Shoptetu ve formuláři produktu. */
+   zelená fajfka v tlačítku místo textu. Selektory přes #product-detail-form, ať přebijí styly Shoptetu ve formuláři produktu. */
 html.sj-test #product-detail-form .sj-acc { box-sizing: border-box; margin: 16px 0 0; padding: 8px 10px 10px; background: var(--sj-bg, #f6f8f9); container-type: inline-size; }
 html.sj-test #product-detail-form .sj-acc__head { margin: 0 0 8px; font-size: 15px; line-height: 22px; color: var(--colors-foregrounds-content-secondary, #4d4d4d); }
 html.sj-test #product-detail-form .sj-acc__head strong { font-size: 16px; font-weight: 700; color: var(--sj-brand, #0b5668); }
@@ -34,11 +34,11 @@ html.sj-test #product-detail-form .sj-acc__qty { box-sizing: border-box; display
 html.sj-test #product-detail-form .sj-acc__qty button { flex: 0 0 26px; width: 26px; min-width: 0; height: auto; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; font-family: inherit; font-size: 17px; font-weight: 400; line-height: 1; color: var(--colors-foregrounds-content-primary, #1f1f1f); cursor: pointer; }
 html.sj-test #product-detail-form .sj-acc__qty input { box-sizing: border-box; flex: 1 1 auto; width: 30px; min-width: 0; height: auto; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; text-align: center; font-family: inherit; font-size: 14px; line-height: 1; color: var(--colors-foregrounds-content-primary, #1f1f1f); -moz-appearance: textfield; appearance: textfield; }
 html.sj-test #product-detail-form .sj-acc__qty input::-webkit-outer-spin-button, html.sj-test #product-detail-form .sj-acc__qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-html.sj-test #product-detail-form .sj-acc__add { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-width: 76px; height: 36px; min-height: 0; margin: 0; padding: 0 12px; background: var(--colors-surface-primary, #fff); border: 1px solid var(--sj-accent-ink, #b64702); border-radius: 0; box-shadow: none; color: var(--sj-accent-ink, #b64702); font-family: inherit; font-size: 15px; font-weight: 900; line-height: 1; text-transform: none; white-space: nowrap; cursor: pointer; }
+html.sj-test #product-detail-form .sj-acc__add { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 76px; min-width: 0; height: 36px; min-height: 0; margin: 0; padding: 0; background: var(--colors-surface-primary, #fff); border: 1px solid var(--sj-accent-ink, #b64702); border-radius: 0; box-shadow: none; color: var(--sj-accent-ink, #b64702); font-family: inherit; font-size: 15px; font-weight: 900; line-height: 1; text-transform: none; white-space: nowrap; cursor: pointer; }
 html.sj-test #product-detail-form .sj-acc__add:hover { background: var(--sj-accent-ink, #b64702); color: #fff; }
-/* v košíku: jen zelená fajfka na místě tlačítka, stejně široká, ať se řádek nehne */
-html.sj-test #product-detail-form .sj-acc__add.is-done, html.sj-test #product-detail-form .sj-acc__add.is-done:hover { background: transparent; border-color: transparent; color: var(--colors-state-success, #3a800e); cursor: default; }
-html.sj-test #product-detail-form .sj-acc__add svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+/* v košíku: tlačítko zůstává, místo textu zelená fajfka; pevná šířka, ať se řádek nehne */
+html.sj-test #product-detail-form .sj-acc__add.is-done, html.sj-test #product-detail-form .sj-acc__add.is-done:hover { background: var(--colors-surface-primary, #fff); border-color: var(--sj-accent-ink, #b64702); color: var(--colors-state-success, #3a800e); cursor: default; }
+html.sj-test #product-detail-form .sj-acc__add svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 html.sj-test #product-detail-form .sj-acc__other { font-size: 15px; line-height: 20px; font-weight: 700; color: var(--sj-accent-ink, #b64702); text-decoration: underline; text-underline-offset: 0.14em; white-space: nowrap; }
 html.sj-test #product-detail-form .sj-acc__qty button:focus-visible, html.sj-test #product-detail-form .sj-acc__qty input:focus-visible, html.sj-test #product-detail-form .sj-acc__add:focus-visible, html.sj-test #product-detail-form .sj-acc__name:focus-visible, html.sj-test #product-detail-form .sj-acc__other:focus-visible { outline: 3px solid var(--colors-focus-primary, #09367e); outline-offset: 2px; }
 @container (max-width: 420px) {
@@ -46,5 +46,5 @@ html.sj-test #product-detail-form .sj-acc__qty button:focus-visible, html.sj-tes
   html.sj-test #product-detail-form .sj-acc__name { font-size: 14px; }
   html.sj-test #product-detail-form .sj-acc__qty { width: 78px; }
   html.sj-test #product-detail-form .sj-acc__qty button { flex-basis: 24px; width: 24px; }
-  html.sj-test #product-detail-form .sj-acc__add { min-width: 64px; padding: 0 10px; }
+  html.sj-test #product-detail-form .sj-acc__add { width: 64px; }
 }

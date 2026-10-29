@@ -28,7 +28,7 @@
 
   /* ---------- Doplňky k podlaze pod Do košíku (komponenta Accessories v design systému, varianta A) ----------
      Rovnou zobrazený seznam: nájezd, roh a soklová lišta ve stejné barvě jako zvolená podlaha, množství a Přidat.
-     Po přidání zůstane u dílu zelená fajfka a v poli počet kusů v košíku (bere se z košíku Shoptetu, takže platí
+     Po přidání zůstane v tlačítku zelená fajfka místo textu a v poli počet kusů v košíku (bere se z košíku Shoptetu, takže platí
      i po obnovení stránky). Změna počtu vrátí Přidat, které nastaví v košíku nový počet.
      Díly se berou z bloku Související produkty (co ke které podlaze patří, se nastavuje v adminu Shoptetu).
      Barvy, ceny, fotky a termíny se čtou z karet dílů. Stáhnou se, až je panel skoro na obrazovce, a do konce
@@ -297,7 +297,7 @@
       buy.appendChild(btn);
       var pending = false;
       function value() { return Math.max(1, parseInt(input.value, 10) || 1); }
-      // zelená fajfka, když je díl v košíku a v poli je stejný počet kusů; jinak tlačítko Přidat
+      // v tlačítku zelená fajfka místo textu, když je díl v košíku a v poli je stejný počet kusů; jinak Přidat
       function show(done) {
         btn.classList.toggle('is-done', done);
         if (done) { btn.innerHTML = ICON_CHECK; btn.setAttribute('aria-label', 'V košíku ' + value() + ' ks'); }
