@@ -29,7 +29,7 @@
   /* ---------- Doplňky k podlaze pod Do košíku (komponenta Accessories v design systému, varianta A) ----------
      Rovnou zobrazený seznam: nájezd, roh a soklová lišta ve stejné barvě jako zvolená podlaha, množství a Přidat.
      Po přidání zůstane v tlačítku zelená fajfka místo textu a v poli počet kusů v košíku (bere se z košíku Shoptetu, takže platí
-     i po obnovení stránky). Změna počtu vrátí Přidat, které nastaví v košíku nový počet.
+     i po obnovení stránky). Plus a minus pak počet v košíku rovnou mění, minus pod 1 ks díl z košíku odebere.
      Díly se berou z bloku Související produkty (co ke které podlaze patří, se nastavuje v adminu Shoptetu).
      Barvy, ceny, fotky a termíny se čtou z karet dílů. Stáhnou se, až je panel skoro na obrazovce, a do konce
      návštěvy zůstanou v sessionStorage. Do košíku se přidává bez vyskakovacího okna. */
@@ -287,27 +287,73 @@
       btn.type = 'button';
       buy.appendChild(qty);
       buy.appendChild(btn);
-      var pending = false;
+      var pending = false, timer = null;
       function value() { return Math.max(1, parseInt(input.value, 10) || 1); }
-      // v tlačítku zelená fajfka místo textu, když je díl v košíku a v poli je stejný počet kusů; jinak Přidat
+      function inCart() { var st = state(it); return st && st.ok ? cartItem(st.priceId) : null; }
+      // díl v košíku: v tlačítku zelená fajfka místo textu (zelený i rámeček), jinak Přidat
       function show(done) {
         btn.classList.toggle('is-done', done);
         if (done) { btn.innerHTML = ICON_CHECK; btn.setAttribute('aria-label', 'V košíku ' + value() + ' ks'); }
         else { btn.textContent = 'Přidat'; btn.removeAttribute('aria-label'); }
       }
+      // pole a fajfka podle košíku (po přidání, po změně košíku jinde, po načtení stránky)
       function sync(fromCart) {
-        if (pending) return;
-        var st = state(it), ci = st && st.ok ? cartItem(st.priceId) : null;
+        if (pending || timer) return;
+        var ci = inCart();
         if (fromCart && ci) input.value = ci.quantity;
-        show(!!ci && ci.quantity === value());
+        show(!!ci);
       }
       li._sjSync = sync;
+      // volání košíku Shoptetu: čeká na ShoptetCartUpdated, pak srovná pole a fajfku s košíkem
+      function cartCall(fn, failText) {
+        pending = true;
+        var t;
+        function done(ok) {
+          clearTimeout(t);
+          d.removeEventListener('ShoptetCartUpdated', onUpdated);
+          pending = false;
+          if (!ok) { warn.textContent = failText; warn.hidden = false; }
+          else warn.hidden = true;
+          // dataLayer košíku Shoptet obnoví spolu s událostí, proto chvilku počkat
+          setTimeout(function () { sync(true); }, 150);
+        }
+        function onUpdated() { done(true); }
+        d.addEventListener('ShoptetCartUpdated', onUpdated);
+        t = setTimeout(function () { done(false); }, 10000);
+        try { fn(); } catch (e) { log('doplňky: košík', e); done(false); }
+      }
+      // díl v košíku: změna počtu se do košíku propíše sama (po chvilce, ať se víc kliknutí sloučí do jednoho)
+      function pushQty() {
+        timer = null;
+        var st = state(it), ci = inCart();
+        if (!ci) { sync(true); return; }
+        var q = value();
+        if (q === ci.quantity) return;
+        track({ event: 'sj_acc_qty', sj_acc_name: it.name, sj_acc_qty: q });
+        cartCall(function () { window.shoptet.cartShared.updateQuantityInCart({ itemId: ci.itemId, priceId: st.priceId, amount: q }); }, 'Počet kusů se teď nepodařilo změnit. Zkuste to v košíku.');
+      }
+      function queue(ms) { clearTimeout(timer); timer = setTimeout(pushQty, ms); }
       qsa('button', qty).forEach(function (b, k) {
-        b.addEventListener('click', function () { input.value = Math.max(1, value() + (k ? 1 : -1)); sync(false); });
+        b.addEventListener('click', function () {
+          var ci = pending ? null : inCart(), next = value() + (k ? 1 : -1);
+          // v košíku a minus pod 1 ks: díl z košíku odebrat
+          if (ci && next < 1) {
+            clearTimeout(timer); timer = null;
+            track({ event: 'sj_acc_remove', sj_acc_name: it.name });
+            cartCall(function () { window.shoptet.cartShared.removeFromCart({ itemId: ci.itemId }); }, 'Díl se teď nepodařilo odebrat. Zkuste to v košíku.');
+            return;
+          }
+          input.value = Math.max(1, next);
+          if (ci) { show(true); queue(400); }
+        });
       });
-      input.addEventListener('input', function () { sync(false); });
-      // Enter v poli by odeslal formulář produktu (přidal podlahu), proto přidá díl
-      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); btn.click(); } });
+      input.addEventListener('input', function () { if (!pending && inCart()) queue(800); });
+      // Enter v poli by odeslal formulář produktu (přidal podlahu): díl v košíku hned uloží počet, jinak přidá díl
+      input.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (inCart()) { clearTimeout(timer); pushQty(); } else btn.click();
+      });
       btn.addEventListener('click', function () {
         if (pending || btn.classList.contains('is-done')) return;
         var st = state(it);
@@ -315,27 +361,13 @@
         if (!st.ok) { if (st.needColor) promptColor(); return; }
         var q = value(), ci = cartItem(st.priceId);
         input.value = q;
-        pending = true;
         show(true);
-        var timer;
-        function finish(ok) {
-          clearTimeout(timer);
-          d.removeEventListener('ShoptetCartUpdated', onUpdated);
-          pending = false;
-          if (!ok) { show(false); warn.textContent = 'Díl se teď nepodařilo přidat. Zkuste to na jeho kartě.'; warn.hidden = false; return; }
-          warn.hidden = true;
-          track({ event: 'sj_acc_add', sj_acc_name: it.name, sj_acc_qty: q });
-          // dataLayer košíku Shoptet obnoví spolu s událostí, proto chvilku počkat
-          setTimeout(function () { sync(true); }, 150);
-        }
-        function onUpdated() { finish(true); }
-        d.addEventListener('ShoptetCartUpdated', onUpdated);
-        timer = setTimeout(function () { finish(false); }, 10000);
-        try {
-          // díl už v košíku je: nastavit počet kusů, jinak přidat (bez vyskakovacího okna)
+        track({ event: 'sj_acc_add', sj_acc_name: it.name, sj_acc_qty: q });
+        // díl už v košíku je: nastavit počet kusů, jinak přidat (bez vyskakovacího okna)
+        cartCall(function () {
           if (ci && ci.itemId) window.shoptet.cartShared.updateQuantityInCart({ itemId: ci.itemId, priceId: st.priceId, amount: q });
           else window.shoptet.cartShared.addToCart({ priceId: st.priceId, amount: q }, true);
-        } catch (e) { log('doplňky: přidání selhalo', e); finish(false); }
+        }, 'Díl se teď nepodařilo přidat. Zkuste to na jeho kartě.');
       });
       sync(true);
       return li;
