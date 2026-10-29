@@ -50,7 +50,6 @@
     var opt = n % 1 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {};
     return n.toLocaleString('cs-CZ', opt).replace(/\s/g, ' ') + ' Kč';
   }
-  function shortDate(s) { var m = /(\d{1,2})\.\s*(\d{1,2})\./.exec(s || ''); return m ? m[1] + '. ' + m[2] + '.' : ''; }
   function colorStem(s) {
     var t = low(s);
     for (var i = 0; i < COLOR_STEMS.length; i++) if (t.indexOf(COLOR_STEMS[i]) !== -1) return COLOR_STEMS[i];
@@ -225,11 +224,6 @@
 
     // dokud se karta dílu nenačetla, cena a fotka z karty v Souvisejících produktech
     function view(it) { return state(it) || { pending: true, price: it.cardPrice, from: it.cardFrom, img: it.img }; }
-    function lastDate() {
-      var dates = items.map(state).filter(function (st) { return st && st.ok && st.date; }).map(function (st) { return st.date; });
-      function key(x) { var m = /(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/.exec(x); return m ? +m[3] * 10000 + +m[2] * 100 + +m[1] : 0; }
-      return dates.sort(function (a, b) { return key(a) - key(b); }).pop() || '';
-    }
 
     /* vykreslení: hlavička a seznam rovnou zobrazený (komponenta Accessories, varianta A) */
     var box = el('div', 'sj-acc');
@@ -254,8 +248,6 @@
         b.textContent = color;
         head.appendChild(b);
       }
-      var date = lastDate();
-      if (date) head.appendChild(d.createTextNode(' · doručíme do ' + shortDate(date)));
     }
     function row(it) {
       var s = view(it);
